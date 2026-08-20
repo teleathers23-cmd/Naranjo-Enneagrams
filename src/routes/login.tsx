@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
 import { accountToEmail, authErrorMessage } from "@/lib/auth/account";
 import { SiteShell } from "@/components/site-shell";
@@ -15,6 +15,17 @@ function Login() {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showSocial, setShowSocial] = useState(false);
+
+  useEffect(() => {
+    const h = window.location.hostname;
+    setShowSocial(
+      h.endsWith("grok-sandbox.com") ||
+        h === "localhost" ||
+        h === "127.0.0.1" ||
+        h === "[::1]",
+    );
+  }, []);
 
   const goAfter = () => {
     const next = new URLSearchParams(window.location.search).get("next") || "/";
@@ -147,7 +158,7 @@ function Login() {
           <p className="mt-5 text-sm text-muted">登录未启用。</p>
         )}
 
-        {authEnabled && (
+        {showSocial && (
           <>
             <p className="mt-6 text-center text-xs text-subtle">或使用第三方</p>
             <div className="mt-2 flex flex-col gap-2">

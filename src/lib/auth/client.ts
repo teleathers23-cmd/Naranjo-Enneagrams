@@ -24,11 +24,11 @@ export const authClient = createAuthClient({
 });
 
 /**
- * True when sign-in UI should be shown. On by default (preview via the baked
- * preview client, deployed apps via the injected per-app client); set
- * `VITE_AUTH_ENABLED=false` to force it off (dev user — see `use-current-user`).
+ * Sign-in is on for testers on the public site. Do not hide the form even if
+ * Vercel baked `VITE_AUTH_ENABLED=false` at build (that left only the developer
+ * fallback user).
  */
-export const authEnabled = import.meta.env.VITE_AUTH_ENABLED !== "false";
+export const authEnabled = true;
 
 /** The upstream providers to render sign-in buttons for. */
 export { GROK_PROVIDERS };

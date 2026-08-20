@@ -61,6 +61,10 @@ function previewAuthSecret(): string {
   globalAuthRef.__grokAuthPreviewSecret__ ??= randomBytes(32).toString("hex");
   return globalAuthRef.__grokAuthPreviewSecret__;
 }
+function productionFallbackSecret(): string {
+  const pid = env("VERCEL_PROJECT_ID") ?? "ennealib";
+  return `naranjo-27/${pid}/better-auth-secret`;
+}
 
 /** Read an env var, treating empty/whitespace as unset. */
 const env = (key: string): string | undefined => {
@@ -70,7 +74,9 @@ const env = (key: string): string | undefined => {
 
 // Explicit off-switch. The deployer sets `VITE_AUTH_ENABLED=true` when it
 // provisions auth; set it to "false" to force auth off everywhere (dev user).
-const authDisabled = env("VITE_AUTH_ENABLED") === "false";
+// Public testers must be able to register. A Vercel env of VITE_AUTH_ENABLED=false
+// used to collapse everyone into the developer fallback user.
+const authDisabled = false;
 
 // Broker federation creds: the deployer injects a per-app client when deployed;
 // otherwise fall back to the shared live-preview client, which the broker accepts
@@ -140,7 +146,11 @@ const trustedOrigins: string[] = [
   ...APP_ORIGINS,
 ];
 
-const databaseUrl = env("DATABASE_URL");
+const databaseUrl =
+  env("DATABASE_URL") ||
+  env("POSTGRES_URL") ||
+  env("POSTGRES_PRISMA_URL") ||
+  env("POSTGRES_URL_NON_POOLING");
 
 // Static broker OAuth endpoints (skip OIDC discovery on every sign-in / callback).
 // Discovery would cost an extra network hop to the broker before the popup can
@@ -190,7 +200,9 @@ export const auth = betterAuth({
   baseURL,
   // Deployed apps inject BETTER_AUTH_SECRET. Preview: process-stable secret on
   // globalThis so HMR doesn't invalidate PGLite-backed sessions (see above).
-  secret: env("BETTER_AUTH_SECRET") ?? previewAuthSecret(),
+  secret:
+    env("BETTER_AUTH_SECRET") ??
+    (env("VERCEL") ? productionFallbackSecret() : previewAuthSecret()),
   database,
 
   // CSRF / origin check for credentialed auth POSTs (email sign-up/sign-in, …).

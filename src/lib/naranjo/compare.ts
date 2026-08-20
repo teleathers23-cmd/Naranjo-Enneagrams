@@ -476,7 +476,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
   cq(
     "c-6sp-6so",
     "安全更来自：",
-    { subtype: "6sp", text: "亲切、联盟、被放进可靠的人的圈子。看起来不像怕。" },
+    { subtype: "6sp", text: "亲切、联盟、被放进可靠的人的圈子。怕被盖在热络下面。" },
     { subtype: "6so", text: "义务、立场、程序和「正确的一边」。" },
   ),
   cq(

@@ -33,6 +33,9 @@ type TestState = {
   shuffleSeed: number;
   hydrated: boolean;
   submittedId: string | null;
+  testerName: string;
+  nameAsked: boolean;
+  accountSavedId: string | null;
   setAnswer: (id: string, value: number) => void;
   goStage2: () => boolean;
   goStage3: () => boolean;
@@ -42,6 +45,8 @@ type TestState = {
   hydrateResult: () => void;
   markHydrated: () => void;
   markSubmitted: (id: string) => void;
+  markAccountSaved: (id: string) => void;
+  setTesterName: (name: string) => void;
 };
 
 const empty = {
@@ -54,6 +59,9 @@ const empty = {
   shuffleSeed: 0,
   hydrated: false,
   submittedId: null as string | null,
+  testerName: "",
+  nameAsked: false,
+  accountSavedId: null as string | null,
 };
 
 export const useTestStore = create<TestState>()(
@@ -93,7 +101,7 @@ export const useTestStore = create<TestState>()(
         const { answers, stage2Types, stage3Ids, shuffleSeed } = get();
         const types = stage2Types.length ? stage2Types : pickStage2Types(answers);
         const result = score(answers, types, stage3Ids, shuffleSeed || 1);
-        set({ stage: "result", result, stage2Types: types, submittedId: null });
+        set({ stage: "result", result, stage2Types: types, submittedId: null, accountSavedId: null });
         return true;
       },
       back: () => {
@@ -105,11 +113,16 @@ export const useTestStore = create<TestState>()(
       reset: () =>
         set({
           ...empty,
+          testerName: get().testerName,
+          nameAsked: get().nameAsked,
           shuffleSeed: freshSeed(),
           hydrated: true,
         }),
       markHydrated: () => set({ hydrated: true }),
       markSubmitted: (id) => set({ submittedId: id }),
+      markAccountSaved: (id) => set({ accountSavedId: id }),
+      setTesterName: (name) =>
+        set({ testerName: name.trim() || "匿名", nameAsked: true }),
       hydrateResult: () => {
         const { answers, stage2Types, stage3Ids, stage, shuffleSeed } = get();
         if (stage !== "result") return;
@@ -133,6 +146,9 @@ export const useTestStore = create<TestState>()(
         consentAt: s.consentAt,
         shuffleSeed: s.shuffleSeed,
         submittedId: s.submittedId,
+        testerName: s.testerName,
+        nameAsked: s.nameAsked,
+        accountSavedId: s.accountSavedId,
       }),
     },
   ),

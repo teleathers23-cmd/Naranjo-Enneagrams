@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { TesterNameModal } from "@/components/tester-name-modal";
 import { CompareBlock } from "@/components/compare-block";
 import { QuestionBlock } from "@/components/question-block";
 import { SiteShell } from "@/components/site-shell";
@@ -37,6 +38,9 @@ function TestPage() {
   const finish = useTestStore((s) => s.finish);
   const back = useTestStore((s) => s.back);
   const reset = useTestStore((s) => s.reset);
+  const nameAsked = useTestStore((s) => s.nameAsked);
+  const testerName = useTestStore((s) => s.testerName);
+  const setTesterName = useTestStore((s) => s.setTesterName);
 
   const [showHelp, setShowHelp] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
@@ -138,6 +142,9 @@ function TestPage() {
 
   return (
     <SiteShell>
+      {hydrated && !nameAsked && (
+        <TesterNameModal onConfirm={setTesterName} />
+      )}
       <div className="fixed inset-x-0 top-0 z-40 h-0.5 bg-border">
         <div
           className="h-full bg-primary transition-[width] duration-300"
@@ -158,7 +165,10 @@ function TestPage() {
           </span>
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <span className="text-xs text-subtle">进度将自动保存在当前浏览器</span>
+          <span className="text-xs text-subtle">
+            {testerName ? `测试者：${testerName} · ` : ""}
+            进度将自动保存在当前浏览器
+          </span>
           <button
             type="button"
             className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted hover:text-fg"

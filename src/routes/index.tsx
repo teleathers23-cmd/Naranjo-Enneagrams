@@ -33,7 +33,7 @@ function Home() {
           二十七副型
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:text-[0.95rem]">
-          依纳兰霍原典编制。结果是心–脑–腹三元组（如 sp3-so6-sp8），顺序按你更从哪一区过日子，不是单一主型。
+          依纳兰霍原典编制。结果是心–脑–腹三元组（如 sp3-so6-sp8）。完成后可导出 A4 PDF；登录后还能把结果保存在账户里。
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:justify-center">
           {stage === "result" ? (

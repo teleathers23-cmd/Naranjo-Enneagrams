@@ -53,8 +53,12 @@ function ResultPage() {
   const answers = useTestStore((s) => s.answers);
   const submittedId = useTestStore((s) => s.submittedId);
   const markSubmitted = useTestStore((s) => s.markSubmitted);
+  const testerName = useTestStore((s) => s.testerName);
+  const accountSavedId = useTestStore((s) => s.accountSavedId);
+  const markAccountSaved = useTestStore((s) => s.markAccountSaved);
   const { user, isPending } = useCurrentUserState();
   const [saved, setSaved] = useState<"idle" | "saving" | "ok" | "err">("idle");
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [openCalc, setOpenCalc] = useState(false);
 
   useEffect(() => {
@@ -64,7 +68,7 @@ function ResultPage() {
   useEffect(() => {
     if (!hydrated || stage !== "result" || !result?.triadCode || submittedId) return;
     let cancelled = false;
-    recordSubmission({ data: { result, answers } })
+    recordSubmission({ data: { result, answers, testerName } })
       .then((res) => {
         if (!cancelled && res.id) markSubmitted(res.id);
       })
@@ -72,7 +76,26 @@ function ResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [hydrated, stage, result, answers, submittedId, markSubmitted]);
+  }, [hydrated, stage, result, answers, submittedId, markSubmitted, testerName]);
+
+  useEffect(() => {
+    if (!hydrated || stage !== "result" || !result?.triadCode) return;
+    if (!user || user.isDevFallback || accountSavedId) return;
+    let cancelled = false;
+    setSaved("saving");
+    saveMyResult({ data: { result, testerName } })
+      .then((res) => {
+        if (cancelled) return;
+        setSaved("ok");
+        if (res.id) markAccountSaved(res.id);
+      })
+      .catch(() => {
+        if (!cancelled) setSaved("err");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, stage, result, user, accountSavedId, testerName, markAccountSaved]);
 
   if (!hydrated) {
     return (
@@ -101,15 +124,28 @@ function ResultPage() {
 
   const onSave = async () => {
     if (!canSave) {
-      void navigate({ to: "/login" });
+      window.location.assign("/login?next=/result");
       return;
     }
     setSaved("saving");
     try {
-      await saveMyResult({ data: r });
+      const res = await saveMyResult({ data: { result: r, testerName } });
       setSaved("ok");
+      if (res.id) markAccountSaved(res.id);
     } catch {
       setSaved("err");
+    }
+  };
+
+  const onPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const { downloadResultPdf } = await import("@/lib/naranjo/export-pdf");
+      await downloadResultPdf({ result: r, testerName });
+    } catch {
+      window.print();
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -117,6 +153,9 @@ function ResultPage() {
     <SiteShell>
       <p className="text-center text-xs tracking-[0.18em] text-muted">TRIAD</p>
       <h1 className="mt-1 text-center font-display text-2xl font-medium">心脑腹三元组</h1>
+      {testerName ? (
+        <p className="mt-1 text-center text-sm text-muted">测试者：{testerName}</p>
+      ) : null}
 
       <section className="mt-6 rounded-xl bg-primary px-5 py-6 text-primary-fg">
         <div className="flex items-start justify-between gap-4">
@@ -432,6 +471,13 @@ function ResultPage() {
           }}
         >
           重新开始
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => void onPdf()}
+          disabled={pdfBusy}
+        >
+          {pdfBusy ? "正在生成 PDF…" : "导出 PDF"}
         </Button>
         <Button onClick={() => void onSave()} disabled={saved === "saving" || isPending}>
           {canSave

@@ -56,6 +56,9 @@ function HistoryPage() {
               <p className="mt-1 font-display text-lg font-medium">
                 {triad ?? (s ? `${shortCode(primary!)} ${subtypeLabel(primary!)}` : r.primary_subtype)}
               </p>
+              {r.tester_name ? (
+                <p className="mt-1 text-xs text-muted">测试者：{r.tester_name}</p>
+              ) : null}
               {s && (
                 <Link
                   to="/types/$id"

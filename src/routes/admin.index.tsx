@@ -83,6 +83,7 @@ function AdminListPage() {
             <thead className="border-b border-border bg-surface-2 text-xs tracking-wide text-subtle">
               <tr>
                 <th className="px-3 py-2.5 font-medium">时间</th>
+                <th className="px-3 py-2.5 font-medium">测试者</th>
                 <th className="px-3 py-2.5 font-medium">来源 IP</th>
                 <th className="px-3 py-2.5 font-medium">三元组</th>
                 <th className="px-3 py-2.5 font-medium">核验</th>
@@ -100,6 +101,11 @@ function AdminListPage() {
                       className="text-fg underline-offset-4 hover:underline"
                     >
                       {formatTime(r.created_at)}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Link to="/admin/$id" params={{ id: r.id }}>
+                      {r.tester_name || "—"}
                     </Link>
                   </td>
                   <td className="px-3 py-2.5 font-mono text-xs">

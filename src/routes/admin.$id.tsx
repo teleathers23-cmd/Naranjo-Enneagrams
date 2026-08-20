@@ -82,6 +82,7 @@ function AdminDetailPage() {
 
       <dl className="mt-6 grid gap-3 sm:grid-cols-2">
         {[
+          ["测试者", row.tester_name || "未填"],
           ["来源 IP", row.ip || "未能读取"],
           ["浏览器", row.user_agent || "—"],
           ["账户", row.user_id ? `已登录 · ${row.user_id}` : "访客（未登录）"],

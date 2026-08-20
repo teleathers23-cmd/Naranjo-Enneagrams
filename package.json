@@ -1,5 +1,5 @@
 {
-  "name": "app-builder-workspace",
+  "name": "naranjo-27",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -9,13 +9,16 @@
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 8080",
     "build": "vite build && npm run db:migrate",
-    "db:migrate": "node scripts/migrate.mjs",
+    "db:migrate": "node run-migrate.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "node --test 'scripts/**/*.test.mjs'",
     "lint": "eslint .",
     "format": "prettier --write ."
+  },
+  "engines": {
+    "node": "22.x"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",

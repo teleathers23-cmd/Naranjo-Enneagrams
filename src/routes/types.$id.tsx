@@ -47,7 +47,17 @@ function SubtypePage() {
       </div>
 
       <p className="mt-6 text-base leading-relaxed">{subtype.oneLiner}</p>
-      <p className="mt-4 text-sm leading-relaxed text-muted">{subtype.portrait}</p>
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+        <h2 className="font-display text-lg font-medium">神经症</h2>
+        <p className="mt-1 text-xs tracking-wide text-subtle">
+          情欲 {type.passion}（{type.passionEs}）· 固着 {type.fixation} · 伊查佐自我 {type.name}
+        </p>
+        <p className="mt-3 text-sm leading-relaxed text-fg">{type.neurosis}</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{subtype.neurosis}</p>
+      </section>
+
+      <p className="mt-6 text-sm leading-relaxed text-muted">{subtype.portrait}</p>
 
       <ul className="mt-6 space-y-2 rounded-xl border border-border bg-surface p-5 text-sm">
         {subtype.markers.map((m) => (
@@ -58,11 +68,12 @@ function SubtypePage() {
         ))}
       </ul>
 
-      <dl className="mt-6 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+      <dl className="mt-6 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
         {[
           ["情欲", type.passion],
           ["固着", type.fixation],
           ["美德", type.virtue],
+          ["陷阱", type.trap],
           ["本能", inst.name],
         ].map(([k, v]) => (
           <div key={k} className="rounded-xl border border-border bg-surface px-3 py-3">

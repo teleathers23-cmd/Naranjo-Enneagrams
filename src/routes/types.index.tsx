@@ -17,7 +17,7 @@ function TypesIndex() {
       <p className="text-xs tracking-[0.18em] text-muted">NARANJO · 27</p>
       <h1 className="mt-2 font-display text-3xl font-medium">二十七性格</h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted">
-        每个副型有纳兰霍给出的专名。反型是同一情欲的相反姿态，最容易被误判。
+        按纳兰霍：九种情欲，各三种本能变体。专名来自 SAT。反型是同一情欲的相反姿态。条目写的是神经症结构，不是流行九型的优点清单。
       </p>
 
       <div className="mt-8 space-y-10">

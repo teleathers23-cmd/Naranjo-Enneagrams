@@ -207,13 +207,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
   cq(
     "c-2so-3so-p",
     "在一个团体里，我更想成为的是：",
-    { subtype: "2so", text: "大家少不了的那个人：张罗、照顾、把人连起来。" },
+    { subtype: "2so", text: "人人都需要、都欠点我的那个人。被围着转、被敬畏，才像自己。" },
     { subtype: "3so", text: "被看见成功的那个人：有成绩、有名声、站得住。" },
   ),
   cq(
     "c-2so-3so-f",
     "被晾在边上时，我更先感到的是：",
-    { subtype: "2so", text: "没人来需要我了，我的好没有换到位置。" },
+    { subtype: "2so", text: "没人来臣服、来需要我了。我的慷慨没有换到称帝的位置。" },
     { subtype: "3so", text: "没人看见我了，这场里我像没做成。" },
     "fixation",
   ),
@@ -265,7 +265,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-8so-2so-p",
     "我为「自己人」出头，更像是：",
     { subtype: "8so", text: "力量用来护场。弱者不能被欺，背叛会过量反击。" },
-    { subtype: "2so", text: "用给予和张罗在群体里占据被拥戴的位置。" },
+    { subtype: "2so", text: "用慷慨和魅力让所有人围着我转。爱是臣服，我来称帝。" },
   ),
   cq(
     "c-9so-3so-p",
@@ -331,7 +331,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-7so-2so-p",
     "我为大家做事、画愿景，更像是：",
     { subtype: "7so", text: "用理想把沉闷和痛苦抬走。牺牲也是一种计划，痛必须有出口。" },
-    { subtype: "2so", text: "用情感劳动换取在群体里被需要、被拥戴的位置。" },
+    { subtype: "2so", text: "让自己成为不可或缺、人人都欠我的存在。情感劳动是称帝的台阶。" },
   ),
   cq(
     "c-7sp-3sp-p",
@@ -405,7 +405,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-2sp-2so",
     "骄傲更表现成：",
     { subtype: "2sp", text: "我该被优待、被养。可爱或示弱比无私更能拿到资源。" },
-    { subtype: "2so", text: "我要在群体里成为不可或缺、被拥戴的人。助人是野心。" },
+    { subtype: "2so", text: "我要成为人人都需要、都敬畏的那个人。助人是野心，爱是臣服。" },
   ),
   cq(
     "c-2sp-2sx",
@@ -416,7 +416,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
   cq(
     "c-2so-2sx",
     "给予更像是为了：",
-    { subtype: "2so", text: "在圈子里站到显眼位置。谁重要，我心里有数。" },
+    { subtype: "2so", text: "在圈子里称帝：人人都围着我转。平等是笑话。" },
     { subtype: "2sx", text: "让这一个对象离不开我。付出不能给别处。" },
   ),
   cq(

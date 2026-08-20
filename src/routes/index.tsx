@@ -29,11 +29,11 @@ function Home() {
         <p className="mb-2 text-xs tracking-[0.22em] text-muted">
           CLAUDIO NARANJO · SAT
         </p>
-        <h1 className="font-display text-3xl font-medium tracking-tight sm:text-4xl">
-          二十七副型
+        <h1 className="font-display text-[1.7rem] font-medium tracking-tight sm:text-4xl">
+          27 Subtypes-The Enneagram
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:text-[0.95rem]">
-          依纳兰霍原典编制。结果是心–脑–腹三元组（如 sp3-so6-sp8）。完成后可导出 A4 PDF；登录后还能把结果保存在账户里。
+          纳兰霍体系。结果是心–脑–腹三元组（如 sp3-so6-sp8）。完成后可导出 PDF；登录后能把结果保存在账户里。
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:justify-center">
           {stage === "result" ? (

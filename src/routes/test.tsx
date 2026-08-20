@@ -4,8 +4,14 @@ import { useMemo, useState, type ReactNode } from "react";
 import { QuestionBlock } from "@/components/question-block";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
-import { CENTER_FULL, CENTER_LABEL, CENTER_PASSION, numberZh, TYPE_MAP, TYPES } from "@/lib/naranjo/catalog";
-import { STAGE1, STAGE1_HELP, STAGE2_HELP, STAGE_CENTER, type Question } from "@/lib/naranjo/questions";
+import {
+  STEP1,
+  STAGE2_HELP,
+  TEST_INSTRUCTION,
+  chunkQuestions,
+  interleaveQuestions,
+  type Question,
+} from "@/lib/naranjo/questions";
 import { stage2QuestionsFor, unanswered } from "@/lib/naranjo/scoring";
 import { useTestStore } from "@/lib/naranjo/store";
 
@@ -17,6 +23,7 @@ function TestPage() {
   const hydrated = useTestStore((s) => s.hydrated);
   const answers = useTestStore((s) => s.answers);
   const stage2Types = useTestStore((s) => s.stage2Types);
+  const shuffleSeed = useTestStore((s) => s.shuffleSeed);
   const setAnswer = useTestStore((s) => s.setAnswer);
   const goStage2 = useTestStore((s) => s.goStage2);
   const finish = useTestStore((s) => s.finish);
@@ -26,47 +33,24 @@ function TestPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [missing, setMissing] = useState<string[]>([]);
 
-  const questions: Question[] = useMemo(
-    () => (stage === 1 ? [...STAGE_CENTER, ...STAGE1] : stage2QuestionsFor(stage2Types)),
-    [stage, stage2Types],
+  const questions: Question[] = useMemo(() => {
+    if (stage === 1) return interleaveQuestions(STEP1, shuffleSeed || 1);
+    return stage2QuestionsFor(stage2Types, shuffleSeed || 1);
+  }, [stage, stage2Types, shuffleSeed]);
+
+  const groups = useMemo(
+    () =>
+      chunkQuestions(questions, 9).map((items, i) => ({
+        key: `g${i}`,
+        title: `第 ${i + 1} 组`,
+        desc:
+          stage === 1
+            ? "激情与固着混排。不要猜这是哪一号。"
+            : "副型句子混排。按结构本身作答。",
+        items,
+      })),
+    [questions, stage],
   );
-
-  const groups = useMemo(() => {
-    if (stage === 1) {
-      const order: Array<"heart" | "head" | "gut"> = ["heart", "head", "gut"];
-      return [
-        {
-          key: "centers",
-          title: "心 · 脑 · 腹　重视筛查",
-          desc: "先问你从哪一区过日子：被看见、想清楚，还是身体先动。不是在问哪一个号。",
-          items: STAGE_CENTER,
-        },
-        ...order.map((center) => ({
-          key: center,
-          title: `${CENTER_LABEL[center]} · ${CENTER_FULL[center]}情欲`,
-          desc: CENTER_PASSION[center],
-          items: STAGE1.filter((q) => q.type && TYPE_MAP[q.type].center === center),
-        })),
-      ];
-    }
-    return stage2Types.map((type) => {
-      const t = TYPE_MAP[type];
-      return {
-        key: `t${type}`,
-        title: `${CENTER_LABEL[t.center]} · ${numberZh(type)}号 · ${t.passion}`,
-        desc: STAGE1_HELP[type],
-        items: questions.filter((q) => q.type === type),
-      };
-    });
-  }, [stage, stage2Types, questions]);
-
-  if (!hydrated) {
-    return (
-      <SiteShell>
-        <div className="mx-auto h-40 max-w-xl animate-pulse rounded-xl bg-surface-2" />
-      </SiteShell>
-    );
-  }
 
   if (!hydrated) {
     return (
@@ -81,7 +65,7 @@ function TestPage() {
   }
 
   const done = questions.filter((q) => answers[q.id] !== undefined).length;
-  const estimate = stage === 1 ? STAGE_CENTER.length + STAGE1.length + 27 : questions.length;
+  const estimate = stage === 1 ? STEP1.length + 27 : questions.length;
 
   const jumpMissing = () => {
     const ids = unanswered(questions, answers);
@@ -128,7 +112,7 @@ function TestPage() {
       <header className="text-center">
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
         <p className="mt-1 text-sm text-muted">
-          {stage === 1 ? "第一步：中心重视 + 九型情欲" : "第二步：三区副型鉴别"}
+          {stage === 1 ? "第一步：激情与固着（混排）" : "第二步：副型结构（混排）"}
         </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
           <span>本步 {questions.length} 题</span>
@@ -145,7 +129,7 @@ function TestPage() {
             className="rounded-full border border-border bg-surface px-3 py-1 text-[0.7rem] text-muted hover:text-fg"
             onClick={() => setShowHelp((v) => !v)}
           >
-            {showHelp ? "收起考察内容" : "查看考察内容"}
+            {showHelp ? "收起说明" : "如何作答"}
           </button>
           <button
             type="button"
@@ -158,20 +142,17 @@ function TestPage() {
           </button>
         </div>
         <p className="mx-auto mt-3 max-w-xl rounded-lg border border-border bg-surface px-3 py-2 text-[0.72rem] leading-relaxed text-subtle">
-          继续作答即表示同意将答案保存在本机；登录后可选择写入账户以便回看。不收集邮箱以外的联系方式。
+          {TEST_INSTRUCTION}
         </p>
         {showHelp && (
           <div className="mx-auto mt-4 max-w-xl rounded-xl border border-border bg-surface p-4 text-left text-sm leading-relaxed text-muted">
             {stage === 1 ? (
               <ul className="space-y-2">
-                {TYPES.map((t) => (
-                  <li key={t.id}>
-                    <span className="font-medium text-fg">
-                      {t.id}号 {t.passion}：
-                    </span>
-                    {STAGE1_HELP[t.id]}
-                  </li>
-                ))}
+                <li>不要按社会赞许或「我应该是好人」来选。</li>
+                <li>不要猜题目属于哪一号。题目已打散，没有型号分区。</li>
+                <li>测的是注意如何组织（激情与固着），不是你做了什么事。</li>
+                <li>心脑腹的重视从这些大类里计算，不会先单独测腹区。</li>
+                <li>全选极端、全选中立、或正反句子都点「极像」，权重会被下调。</li>
               </ul>
             ) : (
               <p>{STAGE2_HELP}</p>
@@ -183,11 +164,11 @@ function TestPage() {
       <div className="mt-8 space-y-4">
         {groups.map((g) => (
           <Section key={g.key} title={g.title} desc={g.desc}>
-            {g.items.map((q, i) => (
+            {g.items.map((q) => (
               <QuestionBlock
                 key={q.id}
                 question={q}
-                index={i}
+                index={questions.findIndex((x) => x.id === q.id)}
                 value={answers[q.id]}
                 onChange={(v) => setAnswer(q.id, v)}
                 highlight={missing.includes(q.id)}

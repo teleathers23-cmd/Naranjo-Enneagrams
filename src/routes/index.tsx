@@ -3,7 +3,7 @@ import { EnneagramGlyph } from "@/components/enneagram-glyph";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { INSTINCTS, TYPES } from "@/lib/naranjo/catalog";
-import { STAGE1, STAGE2, STAGE_CENTER } from "@/lib/naranjo/questions";
+import { STAGE2, STEP1 } from "@/lib/naranjo/questions";
 import { useTestStore } from "@/lib/naranjo/store";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -37,7 +37,7 @@ function Home() {
           </Button>
         </div>
         <p className="mt-4 text-xs text-subtle">
-          约 {STAGE_CENTER.length + STAGE1.length + 27} 题 · 中心筛查 + 情欲 + 副型 · 进度保存在本机浏览器
+          约 {STEP1.length + 27} 题 · 混排 · 进度保存在本机浏览器
         </p>
       </section>
 
@@ -46,7 +46,7 @@ function Home() {
           {
             k: "01",
             t: "先定心脑腹，再定副型",
-            d: "先筛你更从心区、脑区还是腹区过日子，再在每一区里取最强的情欲与本能变体。结果如 sp3-so6-sp8。",
+            d: "题目打散混排，先测激情与固着，同时计算心脑腹重视。不按型号分区，也不先单独测腹区。结果如 sp3-so6-sp8。",
           },
           {
             k: "02",
@@ -109,7 +109,7 @@ function Home() {
       </section>
 
       <p className="mt-10 text-center text-xs text-subtle">
-        第一步 {STAGE_CENTER.length + STAGE1.length} 题（含中心筛查），第二步每个中心的领先类型 × {STAGE2.length / 9} 题。
+        第一步 {STEP1.length} 题混排（含效度题），第二步每个中心的领先类型 × {STAGE2.length / 9} 题，同样混排。
       </p>
     </SiteShell>
   );

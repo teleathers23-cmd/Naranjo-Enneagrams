@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { TypeId } from "./catalog";
-import { STAGE1, STAGE_CENTER } from "./questions";
+import { STEP1 } from "./questions";
 import {
   pickStage2Types,
   score,
@@ -17,6 +17,7 @@ type TestState = {
   stage2Types: TypeId[];
   result: Result | null;
   consentAt: number | null;
+  shuffleSeed: number;
   hydrated: boolean;
   setAnswer: (id: string, value: number) => void;
   goStage2: () => boolean;
@@ -33,6 +34,7 @@ const empty = {
   stage2Types: [] as TypeId[],
   result: null as Result | null,
   consentAt: null as number | null,
+  shuffleSeed: Math.floor(Math.random() * 1_000_000_000),
   hydrated: false,
 };
 
@@ -47,7 +49,7 @@ export const useTestStore = create<TestState>()(
         })),
       goStage2: () => {
         const { answers } = get();
-        const missing = [...STAGE_CENTER, ...STAGE1].some((q) => answers[q.id] === undefined);
+        const missing = STEP1.some((q) => answers[q.id] === undefined);
         if (missing) return false;
         const types = pickStage2Types(answers);
         set({ stage: 2, stage2Types: types });
@@ -65,7 +67,12 @@ export const useTestStore = create<TestState>()(
         if (stage === 2) set({ stage: 1 });
         if (stage === "result") set({ stage: 2 });
       },
-      reset: () => set({ ...empty, hydrated: true }),
+      reset: () =>
+        set({
+          ...empty,
+          shuffleSeed: Math.floor(Math.random() * 1_000_000_000),
+          hydrated: true,
+        }),
       markHydrated: () => set({ hydrated: true }),
       hydrateResult: () => {
         const { answers, stage2Types, stage } = get();
@@ -76,7 +83,7 @@ export const useTestStore = create<TestState>()(
       },
     }),
     {
-      name: "naranjo-27-v2",
+      name: "naranjo-27-v3",
       skipHydration: true,
       partialize: (s) => ({
         answers: s.answers,
@@ -84,6 +91,7 @@ export const useTestStore = create<TestState>()(
         stage2Types: s.stage2Types,
         result: s.result,
         consentAt: s.consentAt,
+        shuffleSeed: s.shuffleSeed,
       }),
     },
   ),

@@ -17,9 +17,10 @@ import {
 } from "./catalog";
 import {
   QUESTION_MAP,
-  STAGE1,
   STAGE2,
-  STAGE_CENTER,
+  STEP1 as STEP1_QUESTIONS,
+  VALIDITY,
+  interleaveQuestions,
   type Question,
 } from "./questions";
 
@@ -132,20 +133,173 @@ export type Result = {
   evidence: Evidence[];
   formula: string;
   calculation: CalcStep[];
+  style: ResponseStyle;
   answered: number;
   totalShown: number;
 };
 
-export const STEP1: Question[] = [...STAGE_CENTER, ...STAGE1];
+export type StyleFlag =
+  | "random"
+  | "exaggeration"
+  | "defense"
+  | "inconsistency"
+  | "yea-saying"
+  | "midpoint";
+
+export type ResponseStyle = {
+  extremePct: number;
+  midpointPct: number;
+  infreq: number;
+  defense: number;
+  exaggeration: number;
+  inconsistency: number;
+  flags: StyleFlag[];
+  notes: string[];
+  typeScale: Record<TypeId, number>;
+  globalScale: number;
+  conflicts: { label: string; cut: number }[];
+};
+
+export const STEP1: Question[] = STEP1_QUESTIONS;
 
 function signedValue(q: Question, raw: number): number {
   const v = Math.max(0, Math.min(LIKERT_MAX, raw));
   return q.reverse ? LIKERT_MAX - v : v;
 }
 
+const ANTITHESIS: Array<[TypeId, TypeId, string]> = [
+  [8, 9, "过量与怠惰同时极高"],
+  [4, 7, "沉在匮乏与逃入选项同时极高"],
+  [2, 5, "靠被需要与收回自己同时极高"],
+  [8, 5, "向前顶与缩回领地同时极高"],
+];
+
+const OVERLAP: Array<[TypeId, TypeId, string]> = [
+  [2, 3, "骄傲与虚荣重叠：都被「被看见」拉高"],
+  [1, 6, "怨恨与恐惧重叠：都被「必须盯住」拉高"],
+  [5, 9, "吝啬与怠惰重叠：都像不参与"],
+  [1, 8, "愤怒的两种出口重叠"],
+  [3, 8, "用力做成与过量重叠"],
+];
+
+export function analyzeStyle(
+  answers: Answers,
+  questions: Question[] = STEP1,
+): ResponseStyle {
+  const content = questions.filter((q) => q.kind !== "validity" && answers[q.id] !== undefined);
+  const n = content.length || 1;
+  let extreme = 0;
+  let mid = 0;
+  let highRaw = 0;
+  for (const q of content) {
+    const v = answers[q.id];
+    if (v === 0 || v === 4) extreme += 1;
+    if (v === 2) mid += 1;
+    if (!q.reverse && v >= 3) highRaw += 1;
+    if (q.reverse && v <= 1) highRaw += 1;
+  }
+  const extremePct = (extreme / n) * 100;
+  const midpointPct = (mid / n) * 100;
+  const yea = highRaw / n;
+
+  const infreq = meanKey(answers, "valid-infreq");
+  const defense = meanKey(answers, "valid-defense");
+  const exaggeration = meanKey(answers, "valid-exagg");
+
+  const typeScale = {} as Record<TypeId, number>;
+  const pairDis: number[] = [];
+  const conflicts: { label: string; cut: number }[] = [];
+  for (const t of TYPES) {
+    typeScale[t.id] = 1;
+    const items = questions.filter((q) => q.type === t.id && answers[q.id] !== undefined);
+    const fwd = items.filter((q) => !q.reverse);
+    const rev = items.filter((q) => q.reverse);
+    if (!fwd.length || !rev.length) continue;
+    const fwdM = avg(fwd.map((q) => answers[q.id]));
+    const revRaw = avg(rev.map((q) => answers[q.id]));
+    const signedFwd = avg(fwd.map((q) => signedValue(q, answers[q.id])));
+    const signedRev = avg(rev.map((q) => signedValue(q, answers[q.id])));
+    const disagree = Math.abs(signedFwd - signedRev) / LIKERT_MAX;
+    pairDis.push(disagree);
+    if (fwdM >= 2.7 && revRaw >= 2.7) {
+      typeScale[t.id] *= 0.52;
+      conflicts.push({
+        label: `${t.id}号正向与反向同时高（结构冲突）`,
+        cut: 0.52,
+      });
+    } else if (disagree >= 0.55) {
+      typeScale[t.id] *= 0.72;
+      conflicts.push({
+        label: `${t.id}号内部不一致`,
+        cut: 0.72,
+      });
+    }
+    if (fwdM <= 0.8 && revRaw <= 0.8) {
+      typeScale[t.id] *= 0.88;
+    }
+  }
+  const inconsistency = pairDis.length ? avg(pairDis) : 0;
+
+  const flags: StyleFlag[] = [];
+  const notes: string[] = [];
+  let globalScale = 1;
+
+  if (infreq >= 2.5 || inconsistency >= 0.58) {
+    flags.push("random");
+    globalScale *= 0.72;
+    notes.push("作答像随机或破坏：罕见题被点高，或正反向严重打架。相关题已降权。");
+  }
+  if (exaggeration >= 2.5 || (extremePct >= 72 && yea >= 0.72)) {
+    flags.push("exaggeration");
+    globalScale *= 0.8;
+    notes.push("夸大或全选极端。已压低整体区分度里的「全都像我」。");
+  }
+  if (defense >= 3 || midpointPct >= 48) {
+    flags.push("defense");
+    if (midpointPct >= 48) flags.push("midpoint");
+    globalScale *= 0.9;
+    notes.push("防御或自我美化倾向：动机「完全清楚」，或过多停在中立。");
+  }
+  if (yea >= 0.78 && extremePct >= 50) {
+    flags.push("yea-saying");
+    globalScale *= 0.78;
+    notes.push("几乎所有句子都往「像我」靠，行为/想法堆叠，不像单一结构。");
+  }
+  if (inconsistency >= 0.4 && !flags.includes("random")) {
+    flags.push("inconsistency");
+    notes.push("部分情欲的正反向打架，这些型号的权重已下调。");
+  }
+
+  return {
+    extremePct,
+    midpointPct,
+    infreq,
+    defense,
+    exaggeration,
+    inconsistency,
+    flags: [...new Set(flags)],
+    notes,
+    typeScale,
+    globalScale,
+    conflicts,
+  };
+}
+
+function meanKey(answers: Answers, key: string): number {
+  const qs = VALIDITY.filter((q) => q.loads.some((l) => l.key === key));
+  const vs = qs.map((q) => answers[q.id]).filter((v) => v !== undefined);
+  return vs.length ? avg(vs) : 0;
+}
+
+function avg(xs: number[]): number {
+  if (!xs.length) return 0;
+  return xs.reduce((a, b) => a + b, 0) / xs.length;
+}
+
 export function accumulate(
   answers: Answers,
   questions: Question[],
+  style?: ResponseStyle,
 ): Map<string, { raw: number; max: number }> {
   const map = new Map<string, { raw: number; max: number }>();
   const add = (key: string, raw: number, max: number) => {
@@ -154,15 +308,54 @@ export function accumulate(
     cur.max += max;
     map.set(key, cur);
   };
+  const g = style?.globalScale ?? 1;
   for (const q of questions) {
     if (answers[q.id] === undefined) continue;
+    if (q.kind === "validity") continue;
     const v = signedValue(q, answers[q.id]);
+    const typeW = q.type && style ? style.typeScale[q.type] ?? 1 : 1;
+    const itemW = g * typeW;
     for (const load of q.loads) {
-      const w = Math.abs(load.weight);
+      const w = Math.abs(load.weight) * itemW;
       add(load.key, v * w, LIKERT_MAX * w);
     }
   }
   return map;
+}
+
+function applyTypeConflicts(
+  pcts: Record<TypeId, number>,
+  style: ResponseStyle,
+): Record<TypeId, number> {
+  const next = { ...pcts };
+  for (const [a, b, label] of ANTITHESIS) {
+    if (next[a] >= 66 && next[b] >= 66) {
+      next[a] *= 0.7;
+      next[b] *= 0.7;
+      style.conflicts.push({ label, cut: 0.7 });
+    }
+  }
+  for (const [a, b, label] of OVERLAP) {
+    if (next[a] >= 62 && next[b] >= 62) {
+      const lo = next[a] <= next[b] ? a : b;
+      const hi = lo === a ? b : a;
+      next[lo] *= 0.82;
+      next[hi] *= 0.94;
+      style.conflicts.push({ label, cut: 0.82 });
+    }
+  }
+  return next;
+}
+
+function ipsatize(pcts: Record<TypeId, number>): Record<TypeId, number> {
+  const vals = TYPES.map((t) => pcts[t.id]);
+  const mean = avg(vals);
+  const out = {} as Record<TypeId, number>;
+  for (const t of TYPES) {
+    const mixed = pcts[t.id] * 0.38 + (50 + (pcts[t.id] - mean)) * 0.62;
+    out[t.id] = Math.max(0, Math.min(100, mixed));
+  }
+  return out;
 }
 
 export function pctOf(raw: number, max: number): number {
@@ -194,8 +387,9 @@ function rankedTypesInCenter(
 }
 
 export function pickStage2Types(answers: Answers): TypeId[] {
-  const acc = accumulate(answers, STEP1);
-  const pcts = typePcts(acc);
+  const style = analyzeStyle(answers, STEP1);
+  const acc = accumulate(answers, STEP1, style);
+  const pcts = ipsatize(applyTypeConflicts(typePcts(acc), style));
   const picked: TypeId[] = [];
   for (const center of CENTERS) {
     const ranked = rankedTypesInCenter(pcts, center);
@@ -207,9 +401,12 @@ export function pickStage2Types(answers: Answers): TypeId[] {
   return picked;
 }
 
-export function stage2QuestionsFor(types: TypeId[]): Question[] {
+export function stage2QuestionsFor(types: TypeId[], seed = 1): Question[] {
   const set = new Set(types);
-  return STAGE2.filter((q) => q.type && set.has(q.type));
+  return interleaveQuestions(
+    STAGE2.filter((q) => q.type && set.has(q.type)),
+    seed + 91,
+  );
 }
 
 function verifyOf(typeGap: number, subtypeGap: number, intensity: number): {
@@ -237,17 +434,16 @@ function verifyOf(typeGap: number, subtypeGap: number, intensity: number): {
 export function score(answers: Answers, stage2Types: TypeId[]): Result {
   const stage2Qs = stage2QuestionsFor(stage2Types);
   const shown = [...STEP1, ...stage2Qs];
-  const acc = accumulate(answers, shown);
+  const style = analyzeStyle(answers, shown);
+  const acc = accumulate(answers, shown, style);
+
+  const rawTypePct = typePcts(acc);
+  const typePctMap = ipsatize(applyTypeConflicts(rawTypePct, style));
 
   const typeScores: TypeScore[] = TYPES.map((t) => {
     const row = acc.get(`t${t.id}`) ?? { raw: 0, max: 1 };
-    return { type: t.id, raw: row.raw, max: row.max, pct: pctOf(row.raw, row.max) };
+    return { type: t.id, raw: row.raw, max: row.max, pct: typePctMap[t.id] };
   }).sort((a, b) => b.pct - a.pct);
-
-  const typePctMap = Object.fromEntries(typeScores.map((t) => [t.type, t.pct])) as Record<
-    TypeId,
-    number
-  >;
 
   const instinctScores: InstinctScore[] = INSTINCTS.map((i) => {
     const row = acc.get(i.id) ?? { raw: 0, max: 1 };
@@ -290,7 +486,7 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
     const tPcts = ids.map((id) => typePctMap[id] ?? 0);
     const typeMean = tPcts.reduce((a, b) => a + b, 0) / tPcts.length;
     const typeMax = Math.max(...tPcts);
-    const pct = dedicatedPct * 0.5 + typeMax * 0.3 + typeMean * 0.2;
+    const pct = dedicatedPct * 0.28 + typeMax * 0.45 + typeMean * 0.27;
     return { center, dedicatedPct, typeMean, typeMax, pct };
   });
 
@@ -358,28 +554,71 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
   let confidence: Result["confidence"] = "medium";
   let confidenceNote =
     "三元组按中心重视排序。请用原典肖像核对每一区，尤其是反型。";
-  if (clearCount === 3) {
+  if (style.flags.includes("random") || style.flags.includes("exaggeration")) {
+    confidence = "low";
+    confidenceNote =
+      "作答风格提示随机、破坏或夸大，三元组仅作弱索引。请对照原典，不要当标签。";
+  } else if (clearCount === 3) {
     confidence = "high";
     confidenceNote = "三个中心都拉开。仍建议阅读相邻副型，测验不能替代自我观察。";
   } else if (contestedCount >= 2 || clearCount === 0) {
     confidence = "low";
     confidenceNote = "至少两个中心接近。把结果当作阅读索引，不要当成标签。";
   }
+  if (style.flags.includes("defense") && confidence === "high") {
+    confidence = "medium";
+    confidenceNote = "有防御或自我美化痕迹，把握下调一档。仍建议对照原典。";
+  }
 
   const evidence = triad.flatMap((s) => s.evidence).slice(0, 10);
 
   const formula =
-    "中心重视 = 0.50×中心题 + 0.30×该区最高情欲 + 0.20×该区三型均值。每区取情欲最高之型，再取该型三副型最高者。副型强度 = 0.50×情欲 + 0.35×副型专名 + 0.15×本能。三元组顺序 = 中心重视降序。";
+    "先混排测激情与固着，顺带合成心脑腹重视（0.28×中心题 + 0.45×该区最高情欲 + 0.27×三型均）。正反向打架、重叠、对峙的型号降权；极端/随机/防御作答再乘风格系数。每区取情欲最高之型，再取该型三副型最高者。副型强度 = 0.50×情欲 + 0.35×副型专名 + 0.15×本能。";
 
   const calculation: CalcStep[] = [
     {
+      title: "0. 作答风格",
+      detail:
+        "检测随机、夸大、防御、中立回避，以及同一结构正反向打架。冲突型号降权，不按表面行为加分。",
+      rows: [
+        {
+          label: "风格标记",
+          value: style.flags.length ? style.flags.join("、") : "未见明显异常",
+        },
+        {
+          label: "极端作答％",
+          value: style.extremePct.toFixed(0),
+        },
+        {
+          label: "中立％",
+          value: style.midpointPct.toFixed(0),
+        },
+        {
+          label: "正反向不一致",
+          value: style.inconsistency.toFixed(2),
+        },
+        {
+          label: "全局权重",
+          value: style.globalScale.toFixed(2),
+        },
+        ...style.conflicts.map((c) => ({
+          label: c.label,
+          value: `×${c.cut}`,
+        })),
+        ...style.notes.map((n, i) => ({
+          label: `说明 ${i + 1}`,
+          value: n,
+        })),
+      ],
+    },
+    {
       title: "1. 心脑腹重视",
       detail:
-        "中心题直接问你从哪一区过日子；再与该区情欲分数合成。排序决定三元组的前后。",
+        "不单独开「腹区测验」。中心重视由混排的激情/固着 + 少量注意落点题合成，排序决定三元组前后。",
       rows: centerScores.map((cs) => ({
         label: `${cs.rank}. ${CENTER_LABEL[cs.center]}（${CENTER_FULL[cs.center]}）`,
         value: cs.pct.toFixed(1),
-        note: `中心题 ${cs.dedicatedPct.toFixed(0)} · 最高情欲 ${cs.typeMax.toFixed(0)} · 三型均 ${cs.typeMean.toFixed(0)}`,
+        note: `注意落点 ${cs.dedicatedPct.toFixed(0)} · 最高情欲 ${cs.typeMax.toFixed(0)} · 三型均 ${cs.typeMean.toFixed(0)}`,
       })),
     },
     {
@@ -444,6 +683,7 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
     evidence,
     formula,
     calculation,
+    style,
     answered: shown.filter((q) => answers[q.id] !== undefined).length,
     totalShown: shown.length,
   };

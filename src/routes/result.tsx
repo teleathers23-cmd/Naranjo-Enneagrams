@@ -123,6 +123,11 @@ function ResultPage() {
         <p className="mt-3 text-xs opacity-70">
           {confidenceLabel} · {r.confidenceNote}
         </p>
+        {r.style?.flags?.length ? (
+          <p className="mt-2 text-xs opacity-70">
+            作答风格：{r.style.flags.join(" · ")}（详见下方计算）
+          </p>
+        ) : null}
       </section>
 
       <section className="mt-6 grid gap-3 sm:grid-cols-3">

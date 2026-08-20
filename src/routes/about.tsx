@@ -8,6 +8,16 @@ function About() {
     <SiteShell>
       <p className="text-xs tracking-[0.18em] text-muted">ABOUT</p>
       <h1 className="mt-2 font-display text-3xl font-medium">关于本测验</h1>
+      <p className="mt-6 rounded-xl border border-border bg-surface px-4 py-3.5 text-sm leading-relaxed text-fg">
+        本测试是基于纳兰霍二十七副型制作的。感谢每一位在网站开发阶段参与测试的测试者。测试制作者是西羽（teleathers）。测试反馈可以发送至邮箱
+        <a
+          href="mailto:teleathers23@gmail.com"
+          className="mx-1 text-primary underline-offset-4 hover:underline"
+        >
+          teleathers23@gmail.com
+        </a>
+        。
+      </p>
       <div className="mt-6 space-y-5 text-sm leading-relaxed text-muted">
         <p>
           本站完全依照克劳迪奥·纳兰霍的性格学来编写：情欲（pasión）、固着（fijación）、三中心，以及他在 SAT

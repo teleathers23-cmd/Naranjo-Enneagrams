@@ -1,0 +1,73 @@
+========================================
+把这个网站放到网上（Vercel）——照着点就行
+========================================
+
+不要用 Cloudflare 上传这个文件夹。
+域名可以继续放在 Cloudflare，网站本身请用 Vercel。
+
+你必须把「这一层里面的全部文件」传上去。
+打开本文件夹后，你应该立刻看到：
+
+  00-请先看这个.txt
+  package.json
+  vite.config.ts
+  src
+  scripts
+  public
+  server
+  migrations
+
+如果只看到一个叫 naranjo-27 的文件夹，请再点进去一层。
+
+----------------------------------------
+第 1 步  解压
+----------------------------------------
+解压下载的 zip。打开后确认能直接看到 package.json 和 scripts。
+
+----------------------------------------
+第 2 步  传到 GitHub
+----------------------------------------
+1. 打开 https://github.com 并登录
+2. 右上角 +  →  New repository
+3. 名字填 naranjo-27，选 Public
+4. 不要勾选 Add a README
+5. Create repository
+6. 点 uploading an existing file
+7. 把本文件夹里的【所有内容】拖进去
+   （包括 src、scripts、public、server、migrations、package.json）
+   不要只拖外层那一个文件夹
+8. 点 Commit changes
+
+上传时请尽量带上 scripts 文件夹。
+若漏传，网站现在也能在 Vercel 编过（测验仍然可用）。
+
+
+----------------------------------------
+第 3 步  用 Vercel 发布
+----------------------------------------
+1. 打开 https://vercel.com
+2. Continue with GitHub
+3. Add New → Project
+4. 导入 naranjo-27
+5. Root Directory 留空
+6. 点 Deploy，等 1–2 分钟
+7. 打开给出的 https://xxxx.vercel.app
+
+测验、原典、结果都可以用。登录功能在独立发布时是关闭的。
+
+----------------------------------------
+第 4 步  绑定你在 Cloudflare 买的域名（可选）
+----------------------------------------
+等第 3 步的 .vercel.app 能打开以后：
+
+1. Vercel 项目 → Settings → Domains → 填入你的域名 → Add
+2. 按页面提示复制 DNS 记录
+3. 到 Cloudflare → 你的域名 → DNS → Records 添加这些记录
+4. 小云朵改成灰色（关掉代理）
+5. 等几分钟，用 https://你的域名 打开
+
+----------------------------------------
+如果又报错
+----------------------------------------
+把 Vercel 红色日志全文发回来。
+最常见原因：漏传了 scripts 文件夹。

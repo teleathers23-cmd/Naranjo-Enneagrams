@@ -41,24 +41,30 @@ function HistoryPage() {
       )}
       <ul className="mt-6 space-y-3">
         {rows?.map((r) => {
-          const id = r.primary_subtype as SubtypeId;
-          const s = SUBTYPE_MAP[id];
+          const triad =
+            r.result && typeof r.result === "object" ? r.result.triadCode : undefined;
+          const primary =
+            r.result && typeof r.result === "object" && r.result.primary
+              ? r.result.primary
+              : (r.primary_subtype.includes("-") ? undefined : (r.primary_subtype as SubtypeId));
+          const s = primary ? SUBTYPE_MAP[primary] : undefined;
           return (
             <li key={r.id} className="rounded-xl border border-border bg-surface p-4">
               <p className="text-xs text-subtle">
                 {new Date(r.created_at).toLocaleString("zh-CN")}
               </p>
-              <p className="mt-1 font-medium">
-                {s ? `${shortCode(id)} ${subtypeLabel(id)}` : id}
+              <p className="mt-1 font-display text-lg font-medium">
+                {triad ?? (s ? `${shortCode(primary!)} ${subtypeLabel(primary!)}` : r.primary_subtype)}
               </p>
-              {s && <p className="mt-1 text-sm text-muted">{s.oneLiner}</p>}
-              <Link
-                to="/types/$id"
-                params={{ id }}
-                className="mt-2 inline-block text-sm text-primary underline-offset-4 hover:underline"
-              >
-                查看该副型
-              </Link>
+              {s && (
+                <Link
+                  to="/types/$id"
+                  params={{ id: primary! }}
+                  className="mt-2 inline-block text-sm text-primary underline-offset-4 hover:underline"
+                >
+                  查看第一区副型
+                </Link>
+              )}
             </li>
           );
         })}

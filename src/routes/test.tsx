@@ -4,8 +4,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { QuestionBlock } from "@/components/question-block";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
-import { CENTER_LABEL, numberZh, TYPE_MAP, TYPES } from "@/lib/naranjo/catalog";
-import { STAGE1, STAGE1_HELP, STAGE2_HELP, type Question } from "@/lib/naranjo/questions";
+import { CENTER_FULL, CENTER_LABEL, CENTER_PASSION, numberZh, TYPE_MAP, TYPES } from "@/lib/naranjo/catalog";
+import { STAGE1, STAGE1_HELP, STAGE2_HELP, STAGE_CENTER, type Question } from "@/lib/naranjo/questions";
 import { stage2QuestionsFor, unanswered } from "@/lib/naranjo/scoring";
 import { useTestStore } from "@/lib/naranjo/store";
 
@@ -27,27 +27,33 @@ function TestPage() {
   const [missing, setMissing] = useState<string[]>([]);
 
   const questions: Question[] = useMemo(
-    () => (stage === 1 ? STAGE1 : stage2QuestionsFor(stage2Types)),
+    () => (stage === 1 ? [...STAGE_CENTER, ...STAGE1] : stage2QuestionsFor(stage2Types)),
     [stage, stage2Types],
   );
 
   const groups = useMemo(() => {
     if (stage === 1) {
-      const order: Array<"gut" | "heart" | "head"> = ["gut", "heart", "head"];
-      return order.map((center) => ({
-        key: center,
-        title: `${CENTER_LABEL[center]} · 情欲`,
-        desc: TYPES.filter((t) => t.center === center)
-          .map((t) => `${t.id}号${t.passion}`)
-          .join("、"),
-        items: STAGE1.filter((q) => q.type && TYPE_MAP[q.type].center === center),
-      }));
+      const order: Array<"heart" | "head" | "gut"> = ["heart", "head", "gut"];
+      return [
+        {
+          key: "centers",
+          title: "心 · 脑 · 腹　重视筛查",
+          desc: "先问你从哪一区过日子：被看见、想清楚，还是身体先动。不是在问哪一个号。",
+          items: STAGE_CENTER,
+        },
+        ...order.map((center) => ({
+          key: center,
+          title: `${CENTER_LABEL[center]} · ${CENTER_FULL[center]}情欲`,
+          desc: CENTER_PASSION[center],
+          items: STAGE1.filter((q) => q.type && TYPE_MAP[q.type].center === center),
+        })),
+      ];
     }
     return stage2Types.map((type) => {
       const t = TYPE_MAP[type];
       return {
         key: `t${type}`,
-        title: `${numberZh(type)}号 · ${t.passion}`,
+        title: `${CENTER_LABEL[t.center]} · ${numberZh(type)}号 · ${t.passion}`,
         desc: STAGE1_HELP[type],
         items: questions.filter((q) => q.type === type),
       };
@@ -75,7 +81,7 @@ function TestPage() {
   }
 
   const done = questions.filter((q) => answers[q.id] !== undefined).length;
-  const estimate = stage === 1 ? STAGE1.length + 27 : questions.length;
+  const estimate = stage === 1 ? STAGE_CENTER.length + STAGE1.length + 27 : questions.length;
 
   const jumpMissing = () => {
     const ids = unanswered(questions, answers);
@@ -122,7 +128,7 @@ function TestPage() {
       <header className="text-center">
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
         <p className="mt-1 text-sm text-muted">
-          {stage === 1 ? "第一步：九型情欲初筛" : "第二步：副型性格鉴别"}
+          {stage === 1 ? "第一步：中心重视 + 九型情欲" : "第二步：三区副型鉴别"}
         </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
           <span>本步 {questions.length} 题</span>

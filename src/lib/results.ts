@@ -11,7 +11,7 @@ export const saveMyResult = createServerFn({ method: "POST" })
     const id = crypto.randomUUID();
     await sql`
       insert into test_results (id, user_id, primary_subtype, result)
-      values (${id}, ${context.userId}, ${data.primary}, ${JSON.stringify(data)}::jsonb)
+      values (${id}, ${context.userId}, ${data.triadCode ?? data.primary}, ${JSON.stringify(data)}::jsonb)
     `;
     return { id };
   });

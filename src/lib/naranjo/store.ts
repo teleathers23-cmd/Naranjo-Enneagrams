@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { TypeId } from "./catalog";
-import { STAGE1 } from "./questions";
+import { STAGE1, STAGE_CENTER } from "./questions";
 import {
   pickStage2Types,
   score,
@@ -47,7 +47,7 @@ export const useTestStore = create<TestState>()(
         })),
       goStage2: () => {
         const { answers } = get();
-        const missing = STAGE1.some((q) => answers[q.id] === undefined);
+        const missing = [...STAGE_CENTER, ...STAGE1].some((q) => answers[q.id] === undefined);
         if (missing) return false;
         const types = pickStage2Types(answers);
         set({ stage: 2, stage2Types: types });
@@ -76,7 +76,7 @@ export const useTestStore = create<TestState>()(
       },
     }),
     {
-      name: "naranjo-27-v1",
+      name: "naranjo-27-v2",
       skipHydration: true,
       partialize: (s) => ({
         answers: s.answers,

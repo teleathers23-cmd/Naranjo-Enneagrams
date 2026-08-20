@@ -3,7 +3,7 @@ import { EnneagramGlyph } from "@/components/enneagram-glyph";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { INSTINCTS, TYPES } from "@/lib/naranjo/catalog";
-import { STAGE1, STAGE2 } from "@/lib/naranjo/questions";
+import { STAGE1, STAGE2, STAGE_CENTER } from "@/lib/naranjo/questions";
 import { useTestStore } from "@/lib/naranjo/store";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -24,7 +24,7 @@ function Home() {
           二十七副型
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-muted sm:text-[0.95rem]">
-          依纳兰霍原典编制的九型人格本能副型测验。测的是情欲与二十七种性格，不是「主型加本能」的拼装。
+          依纳兰霍原典编制。结果是心–脑–腹三元组（如 sp3-so6-sp8），顺序按你更从哪一区过日子，不是单一主型。
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="w-full sm:w-auto">
@@ -37,7 +37,7 @@ function Home() {
           </Button>
         </div>
         <p className="mt-4 text-xs text-subtle">
-          约 {STAGE1.length + 27} 题 · 两步 · 进度保存在本机浏览器
+          约 {STAGE_CENTER.length + STAGE1.length + 27} 题 · 中心筛查 + 情欲 + 副型 · 进度保存在本机浏览器
         </p>
       </section>
 
@@ -45,8 +45,8 @@ function Home() {
         {[
           {
             k: "01",
-            t: "情欲，不是优点清单",
-            d: "题目对准愤怒、骄傲、虚荣、嫉妒、贪婪、恐惧、贪食、情欲、怠惰，而非流行九型的「天赋」。",
+            t: "先定心脑腹，再定副型",
+            d: "先筛你更从心区、脑区还是腹区过日子，再在每一区里取最强的情欲与本能变体。结果如 sp3-so6-sp8。",
           },
           {
             k: "02",
@@ -55,8 +55,8 @@ function Home() {
           },
           {
             k: "03",
-            t: "测验只是筛子",
-            d: "纳兰霍本人怀疑问卷。结果用来对照原典，真正的判型仍靠自我观察。",
+            t: "强度与核验可展开",
+            d: "每个位置给出强度（弱/中/强/极强）和核验（通过/倾向/待核）。完整公式在结果页展开。",
           },
         ].map((c) => (
           <article
@@ -109,7 +109,7 @@ function Home() {
       </section>
 
       <p className="mt-10 text-center text-xs text-subtle">
-        第一步 {STAGE1.length} 题，第二步约 {STAGE2.length / 9} 题 × 候选类型。
+        第一步 {STAGE_CENTER.length + STAGE1.length} 题（含中心筛查），第二步每个中心的领先类型 × {STAGE2.length / 9} 题。
       </p>
     </SiteShell>
   );

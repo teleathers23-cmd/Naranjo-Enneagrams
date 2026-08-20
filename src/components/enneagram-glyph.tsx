@@ -19,8 +19,12 @@ export function EnneagramGlyph({
   highlight,
 }: {
   className?: string;
-  highlight?: number;
+  highlight?: number | number[];
 }) {
+  const marks = new Set(
+    highlight === undefined ? [] : Array.isArray(highlight) ? highlight : [highlight],
+  );
+  const primary = Array.isArray(highlight) ? highlight[0] : highlight;
   return (
     <svg viewBox="0 0 100 100" className={cn("text-fg", className)} aria-hidden>
       <circle
@@ -46,16 +50,18 @@ export function EnneagramGlyph({
         strokeWidth="1.2"
       />
       {points.map(({ n, p }) => {
-        const on = highlight === n;
+        const on = marks.has(n);
+        const lead = primary === n;
         return (
           <circle
             key={n}
             cx={p[0]}
             cy={p[1]}
-            r={on ? 3.4 : 2.2}
+            r={lead ? 3.6 : on ? 3.1 : 2.2}
             fill={on ? "currentColor" : "var(--color-bg)"}
             stroke="currentColor"
             strokeWidth="1.1"
+            opacity={on && !lead ? 0.7 : 1}
           />
         );
       })}

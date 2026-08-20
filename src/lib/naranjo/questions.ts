@@ -1,4 +1,4 @@
-import type { Instinct, SubtypeId, TypeId } from "./catalog";
+import type { CenterId, Instinct, SubtypeId, TypeId } from "./catalog";
 
 export type Load = { key: string; weight: number };
 
@@ -10,6 +10,7 @@ export type Question = {
   section: string;
   type?: TypeId;
   subtype?: SubtypeId;
+  center?: CenterId;
   reverse?: boolean;
   loads: Load[];
 };
@@ -55,6 +56,70 @@ function s(
     ],
   };
 }
+
+function c(id: string, center: CenterId, text: string, help?: string): Question {
+  return {
+    id,
+    stage: 1,
+    center,
+    text,
+    help,
+    section: "center",
+    loads: [{ key: `c-${center}`, weight: 1 }],
+  };
+}
+
+/** 心脑腹重视筛查：测的是你从哪一区过日子，不是测哪一个号。 */
+export const STAGE_CENTER: Question[] = [
+  c(
+    "ch1",
+    "heart",
+    "我对「别人怎么看我、我在关系里是谁」的敏感，远超过对对错或对危险的敏感。",
+    "心区过日子的人，自我感靠被看见、被爱、被承认。不是问你是否善良。",
+  ),
+  c(
+    "ch2",
+    "heart",
+    "羞耻、被忽略或形象塌掉，会立刻动摇我这一天站不站得住。",
+  ),
+  c(
+    "ch3",
+    "heart",
+    "做决定时，我更先问：这会不会让我失去位置、爱，或看起来不像我。",
+  ),
+  c(
+    "cd1",
+    "head",
+    "事情一来，我先想、先看、先找解释或退路；身体和情绪往往稍后才到。",
+    "脑区过日子的人，先用扫描、理解或计划来稳住。不是问你是否聪明。",
+  ),
+  c(
+    "cd2",
+    "head",
+    "不确定、空白、没预案，比冲突或丢脸更让我受不了。",
+  ),
+  c(
+    "cd3",
+    "head",
+    "我靠头脑里的扫描、怀疑或「下一步」来感觉自己还在掌控。",
+  ),
+  c(
+    "cg1",
+    "gut",
+    "我常常身体先有反应：顶住、僵住，或整个人不想动；理由是后补的。",
+    "腹区过日子的人，意志、边界和体感先于形象与分析。不是问你是否脾气大。",
+  ),
+  c(
+    "cg2",
+    "gut",
+    "边界被侵、被推着走、意志被无视，比被误解或想不清楚更冒犯。",
+  ),
+  c(
+    "cg3",
+    "gut",
+    "我对事情常有一种「就是这样」的体感，不太靠说服自己才能动。",
+  ),
+];
 
 export const STAGE1: Question[] = [
   t("t1a", 1, "事情做得不够正确时，我会长时间不舒服，哪怕别人觉得「差不多就行」。"),
@@ -250,7 +315,7 @@ export const STAGE2: Question[] = [
   s("9sx3", "9sx", 9, "sx", "我会把结合理想化，摩擦要么被雾盖住，要么突然变成硬墙。"),
 ];
 
-export const ALL_QUESTIONS: Question[] = [...STAGE1, ...STAGE2];
+export const ALL_QUESTIONS: Question[] = [...STAGE_CENTER, ...STAGE1, ...STAGE2];
 export const QUESTION_MAP: Record<string, Question> = Object.fromEntries(
   ALL_QUESTIONS.map((q) => [q.id, q]),
 );
@@ -276,4 +341,4 @@ export const STAGE1_HELP: Record<TypeId, string> = {
 };
 
 export const STAGE2_HELP =
-  "第二步只针对第一步分数靠前的类型。题目写的是纳兰霍的副型性格，不是「你更爱囤货还是更爱社交」这种本能清单。反型（如坚忍四、特权二、参与九）看起来会不像该型，请按句子本身作答。";
+  "第二步按三个中心分别鉴别：每个中心取情欲最高的类型，再用副型专名题选出本能变体。反型看起来会不像该号，请按句子本身作答。";

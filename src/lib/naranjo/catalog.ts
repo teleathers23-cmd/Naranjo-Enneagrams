@@ -686,17 +686,48 @@ export function subtypeLabel(id: SubtypeId): string {
   return `${inst.name}${numberZh(s.type)}号 · ${s.name}`;
 }
 
-export function shortCode(id: SubtypeId): string {
+export type CenterId = "heart" | "head" | "gut";
+
+export const CENTERS: CenterId[] = ["heart", "head", "gut"];
+
+export const CENTER_TYPES: Record<CenterId, readonly TypeId[]> = {
+  heart: [2, 3, 4],
+  head: [5, 6, 7],
+  gut: [8, 9, 1],
+};
+
+export const CENTER_LABEL: Record<CenterId, string> = {
+  heart: "心区",
+  head: "脑区",
+  gut: "腹区",
+};
+
+export const CENTER_FULL: Record<CenterId, string> = {
+  heart: "情感中心",
+  head: "头脑中心",
+  gut: "身体中心",
+};
+
+export const CENTER_PASSION: Record<CenterId, string> = {
+  heart: "羞耻 · 形象 · 被看见",
+  head: "恐惧 · 扫描 · 理解",
+  gut: "愤怒 · 意志 · 边界",
+};
+
+export function centerOf(type: TypeId): CenterId {
+  return TYPE_MAP[type].center;
+}
+
+/** Result token, e.g. sp3 */
+export function triadToken(id: SubtypeId): string {
   const s = SUBTYPE_MAP[id];
-  return `${s.instinct.toUpperCase()}${s.type}`;
+  return `${s.instinct}${s.type}`;
+}
+
+export function shortCode(id: SubtypeId): string {
+  return triadToken(id);
 }
 
 export function numberZh(n: number): string {
   return ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"][n] ?? String(n);
 }
-
-export const CENTER_LABEL: Record<"gut" | "heart" | "head", string> = {
-  gut: "身体中心",
-  heart: "情感中心",
-  head: "头脑中心",
-};

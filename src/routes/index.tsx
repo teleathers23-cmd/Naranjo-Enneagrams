@@ -37,7 +37,7 @@ function Home() {
           </Button>
         </div>
         <p className="mt-4 text-xs text-subtle">
-          约 {STEP1.length + 27} 题 · 混排 · 进度保存在本机浏览器
+          三步混排 · 进度保存在本机浏览器
         </p>
       </section>
 
@@ -45,8 +45,8 @@ function Home() {
         {[
           {
             k: "01",
-            t: "先定心脑腹，再定副型",
-            d: "题目打散混排，先测激情与固着，同时计算心脑腹重视。不按型号分区，也不先单独测腹区。结果如 sp3-so6-sp8。",
+            t: "先定心脑腹，再定副型，最后对照",
+            d: "题目打散混排，先测激情与固着，同时计算心脑腹重视。副型之后会按你的作答挑易混结构做强迫对照（例如社交二号与社交三号）。结果如 sp3-so6-sp8。",
           },
           {
             k: "02",
@@ -109,7 +109,8 @@ function Home() {
       </section>
 
       <p className="mt-10 text-center text-xs text-subtle">
-        第一步 {STEP1.length} 题混排（含效度题），第二步每个中心的领先类型 × {STAGE2.length / 9} 题，同样混排。
+        第一步 {STEP1.length} 题混排（含效度题），第二步每个中心的领先类型 × {STAGE2.length / 9}{" "}
+        题，第三步按易混结构动态对照（含「两个都像我 / 两个都不像我」）。
       </p>
     </SiteShell>
   );

@@ -234,6 +234,28 @@ function ResultPage() {
         );
       })}
 
+      {r.compare && r.compare.length > 0 && (
+        <section className="mt-8 rounded-xl border border-border bg-surface p-5">
+          <h2 className="font-display text-lg font-medium">第三步对照</h2>
+          <p className="mt-1 text-xs text-muted">
+            按你前面的领先/次席与易混副型出题。滑向一边会改该区权重；两个都像不决胜；两个都不像两边降权。
+          </p>
+          <ul className="mt-4 divide-y divide-border overflow-hidden rounded-lg border border-border">
+            {r.compare.map((o) => (
+              <li key={o.id} className="px-3 py-2.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-sm">
+                    {o.leftLabel} ↔ {o.rightLabel}
+                  </span>
+                  <span className="text-xs text-muted">{o.note}</span>
+                </div>
+                <p className="mt-0.5 text-xs leading-relaxed text-subtle">{o.stem}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="mt-8 overflow-hidden rounded-xl border border-border bg-surface">
         <button
           type="button"

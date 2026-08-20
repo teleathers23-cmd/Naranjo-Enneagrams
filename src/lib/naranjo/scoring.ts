@@ -23,6 +23,13 @@ import {
   interleaveQuestions,
   type Question,
 } from "./questions";
+import {
+  compareNudge,
+  describeOutcome,
+  shownCompareQuestions,
+  type CompareOutcome,
+  type CompareQuestion,
+} from "./compare";
 
 export type Answers = Record<string, number>;
 
@@ -134,6 +141,7 @@ export type Result = {
   formula: string;
   calculation: CalcStep[];
   style: ResponseStyle;
+  compare?: CompareOutcome[];
   answered: number;
   totalShown: number;
 };
@@ -431,7 +439,120 @@ function verifyOf(typeGap: number, subtypeGap: number, intensity: number): {
   };
 }
 
-export function score(answers: Answers, stage2Types: TypeId[]): Result {
+function clampPct(n: number): number {
+  return Math.max(0, Math.min(100, n));
+}
+
+function recomputeSubtypeBlend(
+  subtypeScores: SubtypeScore[],
+  typePctMap: Record<TypeId, number>,
+  stage2Types: TypeId[],
+) {
+  for (const row of subtypeScores) {
+    const typePct = typePctMap[SUBTYPE_MAP[row.id].type] ?? 0;
+    row.typePct = typePct;
+    const tested = stage2Types.includes(SUBTYPE_MAP[row.id].type);
+    row.pct = tested
+      ? typePct * 0.5 + row.specPct * 0.35 + row.instinctPct * 0.15
+      : typePct * 0.72 + row.instinctPct * 0.28;
+  }
+}
+
+function nudgeKey(
+  typePctMap: Record<TypeId, number>,
+  subtypeScores: SubtypeScore[],
+  pole: CompareQuestion["left"],
+  factor: number,
+) {
+  if (pole.type) {
+    typePctMap[pole.type] = clampPct(typePctMap[pole.type] * factor);
+  }
+  if (pole.subtype) {
+    const row = subtypeScores.find((s) => s.id === pole.subtype);
+    if (row) row.pct = clampPct(row.pct * factor);
+    const t = SUBTYPE_MAP[pole.subtype].type;
+    typePctMap[t] = clampPct(typePctMap[t] * (1 + (factor - 1) * 0.45));
+  }
+}
+
+function applyCompare(
+  typePctMap: Record<TypeId, number>,
+  subtypeScores: SubtypeScore[],
+  answers: Answers,
+  items: CompareQuestion[],
+  style: ResponseStyle,
+  stage2Types: TypeId[],
+): CompareOutcome[] {
+  const typeItems = items.filter((q) => !q.left.subtype && !q.right.subtype);
+  const subItems = items.filter((q) => q.left.subtype || q.right.subtype);
+  const outcomes: CompareOutcome[] = [];
+  let bothCount = 0;
+  let neitherCount = 0;
+
+  const run = (list: CompareQuestion[], afterTypes: boolean) => {
+    for (const q of list) {
+      const raw = answers[q.id];
+      const out = describeOutcome(q, raw);
+      if (out) outcomes.push(out);
+      if (raw === undefined) continue;
+      const nudge = compareNudge(raw);
+      if (nudge.kind === "both") {
+        bothCount += 1;
+        const lt = q.left.subtype ? SUBTYPE_MAP[q.left.subtype].type : q.left.type;
+        const rt = q.right.subtype ? SUBTYPE_MAP[q.right.subtype].type : q.right.type;
+        if (lt && rt) {
+          const mean = ((typePctMap[lt] ?? 0) + (typePctMap[rt] ?? 0)) / 2;
+          typePctMap[lt] = clampPct((typePctMap[lt] ?? 0) * 0.72 + mean * 0.28);
+          typePctMap[rt] = clampPct((typePctMap[rt] ?? 0) * 0.72 + mean * 0.28);
+        }
+        style.conflicts.push({
+          label: `对照「两个都像」：${out?.leftLabel ?? ""} / ${out?.rightLabel ?? ""}`,
+          cut: 1,
+        });
+        continue;
+      }
+      if (nudge.kind === "neither") {
+        neitherCount += 1;
+        nudgeKey(typePctMap, subtypeScores, q.left, 0.86);
+        nudgeKey(typePctMap, subtypeScores, q.right, 0.86);
+        style.conflicts.push({
+          label: `对照「两个都不像」：${out?.leftLabel ?? ""} / ${out?.rightLabel ?? ""}`,
+          cut: 0.86,
+        });
+        continue;
+      }
+      if (nudge.toward === 0) continue;
+      const win = nudge.toward < 0 ? q.left : q.right;
+      const lose = nudge.toward < 0 ? q.right : q.left;
+      const boost = 1 + nudge.mag * (afterTypes ? 0.24 : 0.2);
+      const cut = 1 - nudge.mag * (afterTypes ? 0.18 : 0.16);
+      nudgeKey(typePctMap, subtypeScores, win, boost);
+      nudgeKey(typePctMap, subtypeScores, lose, cut);
+    }
+  };
+
+  run(typeItems, false);
+  recomputeSubtypeBlend(subtypeScores, typePctMap, stage2Types);
+  run(subItems, true);
+
+  if (bothCount >= 2) {
+    style.notes.push("第三步多次「两个都像」：易混结构未拉开，重叠已写入核验。");
+  }
+  if (neitherCount >= 2) {
+    style.notes.push("第三步多次「两个都不像」：当前候选可能都不是该区结构，把握下调。");
+    style.globalScale *= 0.92;
+  }
+
+  subtypeScores.sort((a, b) => b.pct - a.pct);
+  return outcomes;
+}
+
+export function score(
+  answers: Answers,
+  stage2Types: TypeId[],
+  stage3Ids: string[] = [],
+  seed = 1,
+): Result {
   const stage2Qs = stage2QuestionsFor(stage2Types);
   const shown = [...STEP1, ...stage2Qs];
   const style = analyzeStyle(answers, shown);
@@ -493,6 +614,24 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
   const centerScores: CenterScore[] = [...centerScoresUnranked]
     .sort((a, b) => b.pct - a.pct)
     .map((c, i) => ({ ...c, rank: (i + 1) as 1 | 2 | 3 }));
+
+  const shownCompare = shownCompareQuestions(stage3Ids, seed);
+  const compare = applyCompare(
+    typePctMap,
+    subtypeScores,
+    answers,
+    shownCompare,
+    style,
+    stage2Types,
+  );
+  compare.sort(
+    (a, b) => stage3Ids.indexOf(a.id) - stage3Ids.indexOf(b.id),
+  );
+
+  for (const row of typeScores) {
+    row.pct = typePctMap[row.type] ?? row.pct;
+  }
+  typeScores.sort((a, b) => b.pct - a.pct);
 
   const slots: TriadSlot[] = centerScores.map((cs, i) => {
     const rankedTypes = rankedTypesInCenter(typePctMap, cs.center);
@@ -565,15 +704,20 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
     confidence = "low";
     confidenceNote = "至少两个中心接近。把结果当作阅读索引，不要当成标签。";
   }
+  const neitherHits = compare.filter((o) => o.choice === "neither").length;
   if (style.flags.includes("defense") && confidence === "high") {
     confidence = "medium";
     confidenceNote = "有防御或自我美化痕迹，把握下调一档。仍建议对照原典。";
+  }
+  if (neitherHits >= 2 && confidence === "high") {
+    confidence = "medium";
+    confidenceNote = "第三步多次两个都不像，把握下调。请用原典肖像核对。";
   }
 
   const evidence = triad.flatMap((s) => s.evidence).slice(0, 10);
 
   const formula =
-    "先混排测激情与固着，顺带合成心脑腹重视（0.28×中心题 + 0.45×该区最高情欲 + 0.27×三型均）。正反向打架、重叠、对峙的型号降权；极端/随机/防御作答再乘风格系数。每区取情欲最高之型，再取该型三副型最高者。副型强度 = 0.50×情欲 + 0.35×副型专名 + 0.15×本能。";
+    "先混排测激情与固着，顺带合成心脑腹重视（0.28×中心题 + 0.45×该区最高情欲 + 0.27×三型均）。正反向打架、重叠、对峙的型号降权；极端/随机/防御作答再乘风格系数。每区取情欲最高之型，再取该型三副型最高者。副型强度 = 0.50×情欲 + 0.35×副型专名 + 0.15×本能。第三步对易混结构做强迫对照：滑向一边则加分/减分；两个都像则拉近差距；两个都不像则两边降权。";
 
   const calculation: CalcStep[] = [
     {
@@ -665,6 +809,18 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
         value: row.pct.toFixed(1),
       })),
     },
+    {
+      title: "6. 第三步易混对照",
+      detail:
+        "按当前领先/次席与原典易混副型出题。滑向一边给胜方加权、负方降权；两个都像不决胜；两个都不像两边降权。型号在作答时不显示。",
+      rows: compare.length
+        ? compare.map((o) => ({
+            label: `${o.leftLabel} ↔ ${o.rightLabel}`,
+            value: o.note,
+            note: o.stem,
+          }))
+        : [{ label: "未作对照", value: "—" }],
+    },
   ];
 
   return {
@@ -684,8 +840,10 @@ export function score(answers: Answers, stage2Types: TypeId[]): Result {
     formula,
     calculation,
     style,
-    answered: shown.filter((q) => answers[q.id] !== undefined).length,
-    totalShown: shown.length,
+    compare,
+    answered: shown.filter((q) => answers[q.id] !== undefined).length +
+      shownCompare.filter((q) => answers[q.id] !== undefined).length,
+    totalShown: shown.length + shownCompare.length,
   };
 }
 

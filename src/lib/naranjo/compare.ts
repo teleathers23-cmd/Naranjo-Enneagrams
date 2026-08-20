@@ -1,0 +1,740 @@
+import {
+  SUBTYPE_MAP,
+  TYPE_MAP,
+  centerOf,
+  triadToken,
+  type CenterId,
+  type SubtypeId,
+  type TypeId,
+} from "./catalog";
+
+export const COMPARE_BOTH = 8;
+export const COMPARE_NEITHER = 9;
+
+export type ComparePole = {
+  text: string;
+  type?: TypeId;
+  subtype?: SubtypeId;
+};
+
+export type CompareQuestion = {
+  id: string;
+  stem: string;
+  left: ComparePole;
+  right: ComparePole;
+  facet: "passion" | "fixation";
+  pair: string;
+};
+
+export type CompareChoice =
+  | "left"
+  | "lean-left"
+  | "mid"
+  | "lean-right"
+  | "right"
+  | "both"
+  | "neither";
+
+export type CompareOutcome = {
+  id: string;
+  pair: string;
+  stem: string;
+  choice: CompareChoice;
+  leftLabel: string;
+  rightLabel: string;
+  note: string;
+};
+
+export const STAGE3_HELP =
+  "这一步只对前面接近的结构做对照。左右是两种不同的内在运作，不是对错。可以滑向更像的一边，也可以选两个都像或两个都不像。不要按你希望自己是谁来选。";
+
+export function pairKey(a: string, b: string): string {
+  return [a, b].sort().join("|");
+}
+
+function typePair(a: TypeId, b: TypeId): string {
+  return pairKey(`t${a}`, `t${b}`);
+}
+
+function subPair(a: SubtypeId, b: SubtypeId): string {
+  return pairKey(a, b);
+}
+
+function poleLabel(p: ComparePole): string {
+  if (p.subtype) return triadToken(p.subtype);
+  if (p.type) return `${p.type}号${TYPE_MAP[p.type].passion}`;
+  return "";
+}
+
+function cq(
+  id: string,
+  stem: string,
+  left: ComparePole,
+  right: ComparePole,
+  facet: "passion" | "fixation" = "passion",
+): CompareQuestion {
+  const la = left.subtype ?? (left.type ? `t${left.type}` : id);
+  const ra = right.subtype ?? (right.type ? `t${right.type}` : `${id}-r`);
+  return { id, stem, left, right, facet, pair: pairKey(la, ra) };
+}
+
+/** 对照题库：针对核心激情/固着，以及易混副型。作答时不显示型号。 */
+export const COMPARE_BANK: CompareQuestion[] = [
+  // —— 心区情欲 ——
+  cq(
+    "c-t2-t3-p",
+    "我感觉自己还在、还算数的时候，更像是：",
+    { type: 2, text: "有人需要我、来找我、把我放在心里。我不被需要就像被抽空。" },
+    { type: 3, text: "事情做成了、我看起来成功、被当成能干的人。一停下来就发慌。" },
+  ),
+  cq(
+    "c-t2-t3-f",
+    "最刺到我的丢脸，更像是：",
+    { type: 2, text: "原来我不是那个被需要的人，位置空了。" },
+    { type: 3, text: "原来我看起来不行，形象塌了。" },
+    "fixation",
+  ),
+  cq(
+    "c-t3-t4-p",
+    "自我感更靠的是：",
+    { type: 3, text: "做成、像样、被认可的样子。感受可以往后放。" },
+    { type: 4, text: "缺了一块、与别人不同、情绪够浓，才知道自己还活着。" },
+  ),
+  cq(
+    "c-t3-t4-f",
+    "别人过得轻松时，我更先感到的是：",
+    { type: 3, text: "我要追上、做出成绩，不能显得落后。" },
+    { type: 4, text: "他们天生有一块我没有的，我永远差一截。" },
+    "fixation",
+  ),
+  cq(
+    "c-t2-t4-p",
+    "在亲近的人面前，我更怕的是：",
+    { type: 2, text: "我付出了，却不是那个特别被要的人。" },
+    { type: 4, text: "别人天然完整，我这边总像缺了一角。" },
+  ),
+  cq(
+    "c-t2-t4-f",
+    "爱这件事，我更相信的是：",
+    { type: 2, text: "我要成为对方缺的那一味，被需要才配被爱。" },
+    { type: 4, text: "我必须更特别、更深，否则爱就会落到别人身上。" },
+    "fixation",
+  ),
+
+  // —— 脑区情欲 ——
+  cq(
+    "c-t5-t6-p",
+    "不确定的时候，我更先：",
+    { type: 5, text: "缩回自己的领地，少给、先看清楚再动。" },
+    { type: 6, text: "去找同盟、规则或靠得住的人，把威胁扫描一遍。" },
+  ),
+  cq(
+    "c-t5-t6-f",
+    "我更难忍受的是：",
+    { type: 5, text: "被当场要求投入、分享、表态，像储备被伸手进来。" },
+    { type: 6, text: "没有确认、没有后路，安心总像还差一步。" },
+    "fixation",
+  ),
+  cq(
+    "c-t6-t7-p",
+    "压力来了，我更像是：",
+    { type: 6, text: "担心会出事，反复确认、站队、准备万一。" },
+    { type: 7, text: "想换场景、换计划、换下一口，当下很快变成跳板。" },
+  ),
+  cq(
+    "c-t6-t7-f",
+    "痛苦或不舒服出现时，我更先：",
+    { type: 6, text: "盯住它，想象最坏，寻找谁可靠、什么规则能护住我。" },
+    { type: 7, text: "讲出道理、找出口，或告诉自己其实还好，赶紧转向更好的可能。" },
+    "fixation",
+  ),
+  cq(
+    "c-t5-t7-p",
+    "面对「还有更多」时，我更像是：",
+    { type: 5, text: "把需求和参与降到最低，多出来的会耗我。" },
+    { type: 7, text: "选项多才像活着，被钉死在一件沉闷的事上像窒息。" },
+  ),
+  cq(
+    "c-t5-t7-f",
+    "我保护自己的方式，更像是：",
+    { type: 5, text: "少开口、少欠、先观察，内在库存不随便拿出去。" },
+    { type: 7, text: "用计划、下一步和新鲜感躲开限制与沉重。" },
+    "fixation",
+  ),
+
+  // —— 腹区情欲 ——
+  cq(
+    "c-t8-t9-p",
+    "冲突来了，我更像是：",
+    { type: 8, text: "往前顶。强度上来，软弱不许出现。" },
+    { type: 9, text: "先麻木、先同意、先维持熟悉的节奏。怒气很晚才被听见。" },
+  ),
+  cq(
+    "c-t8-t9-f",
+    "我想要的东西，更像是：",
+    { type: 8, text: "直接去拿。过量、力气、说真话，才像活着。" },
+    { type: 9, text: "常常排不到前面。为了不吵，意愿会往后推。" },
+    "fixation",
+  ),
+  cq(
+    "c-t9-t1-p",
+    "我不舒服却不发作的时候，更像是：",
+    { type: 9, text: "意愿被往后推了，自己都快听不见「我想要」。" },
+    { type: 1, text: "怒气压成长期的「不该这样」，还在心里改。" },
+  ),
+  cq(
+    "c-t9-t1-f",
+    "日子被打乱时，我更烦的是：",
+    { type: 9, text: "熟悉的舒适和惯性没了，像安神药被拿走。" },
+    { type: 1, text: "事情没落到「该有的样子」，弦松不下来。" },
+    "fixation",
+  ),
+  cq(
+    "c-t8-t1-p",
+    "世界不对的时候，我更先：",
+    { type: 8, text: "用力气和过量把事情拿回来。绕弯、装可怜让我不屑。" },
+    { type: 1, text: "用「应该」和纠正把事情改回来。不服气会长期记着。" },
+  ),
+  cq(
+    "c-t8-t1-f",
+    "软弱露出来时，我更像是：",
+    { type: 8, text: "危险。软下来就会被占便宜，所以先硬、先占位置。" },
+    { type: 1, text: "等于做错、等于放任。休息和马虎都像亏欠。" },
+    "fixation",
+  ),
+
+  // —— 用户举例：so2 vs so3 ——
+  cq(
+    "c-2so-3so-p",
+    "在一个团体里，我更想成为的是：",
+    { subtype: "2so", text: "大家少不了的那个人：张罗、照顾、把人连起来。" },
+    { subtype: "3so", text: "被看见成功的那个人：有成绩、有名声、站得住。" },
+  ),
+  cq(
+    "c-2so-3so-f",
+    "被晾在边上时，我更先感到的是：",
+    { subtype: "2so", text: "没人来需要我了，我的好没有换到位置。" },
+    { subtype: "3so", text: "没人看见我了，这场里我像没做成。" },
+    "fixation",
+  ),
+
+  // —— 易混副型（核心结构对照） ——
+  cq(
+    "c-2sx-3sx-p",
+    "在那一个人面前，我更在意的是：",
+    { subtype: "2sx", text: "我是否被欲望、是否成为他缺的那一味。" },
+    { subtype: "3sx", text: "我是否有吸引力、是否被选中、看起来能不能赢。" },
+  ),
+  cq(
+    "c-1sp-6sp-p",
+    "日常里我更紧的是：",
+    { subtype: "1sp", text: "身体、家务、钱和程序必须正确。一松就觉得不该这样。" },
+    { subtype: "6sp", text: "有没有靠得住的人、这个地方会不会垮。我先让自己好相处。" },
+  ),
+  cq(
+    "c-1so-6so-p",
+    "我坚持规则和立场，更像是：",
+    { subtype: "1so", text: "原则就是我。大家都这样，也不能成为我去做的理由。" },
+    { subtype: "6so", text: "借系统压住怕。忠诚和怀疑缠在一起，怕自己人破裂。" },
+  ),
+  cq(
+    "c-1sx-8sx-p",
+    "我对亲近的人很烈，更像是：",
+    { subtype: "1sx", text: "要把他改成对的样子。妒和义愤搅在一起。" },
+    { subtype: "8sx", text: "要占有、要穿透。虚伪和软都不许，平淡等于没发生。" },
+  ),
+  cq(
+    "c-4sp-8sp-p",
+    "我能扛、能吃苦，更像是：",
+    { subtype: "4sp", text: "苦往下咽，证明我比你们更能熬，不求可怜。" },
+    { subtype: "8sp", text: "胃口和地盘是直接的。扛是为了拿我要的，不演委屈。" },
+  ),
+  cq(
+    "c-4sx-8sx-p",
+    "对那一个重要的人，我更像是：",
+    { subtype: "4sx", text: "较劲、不能当第二。你有的我必须更好，否则就恨。" },
+    { subtype: "8sx", text: "要占有、要烈。控制和献身缠在一起。" },
+  ),
+  cq(
+    "c-5sx-4sx-p",
+    "我把一个懂我的人看得极重，更像是：",
+    { subtype: "5sx", text: "只把内在交给这一条秘密通道，怕被众人吸干。" },
+    { subtype: "4sx", text: "这个人有的我必须更好，关系是证明我特不特殊。" },
+  ),
+  cq(
+    "c-8so-2so-p",
+    "我为「自己人」出头，更像是：",
+    { subtype: "8so", text: "力量用来护场。弱者不能被欺，背叛会过量反击。" },
+    { subtype: "2so", text: "用给予和张罗在群体里占据被拥戴的位置。" },
+  ),
+  cq(
+    "c-9so-3so-p",
+    "我在团体里很忙，更像是：",
+    { subtype: "9so", text: "自我融化在「我们」里。一个人面对自己时反而空。" },
+    { subtype: "3so", text: "忙着被看见成功。没有观众的忙不算。" },
+  ),
+  cq(
+    "c-6sx-8sx-p",
+    "我让自己看起来不好惹，更是为了：",
+    { subtype: "6sx", text: "怕被吓、被控，所以先武装。迎上去是为了不当那个怕的人。" },
+    { subtype: "8sx", text: "过量本身就是活着，不是为了防怕。强度是胃口。" },
+  ),
+  cq(
+    "c-5sp-9sp-p",
+    "我待在自己的小空间里，更像是：",
+    { subtype: "5sp", text: "少给、少被看见。外界是消耗，需求能少则少。" },
+    { subtype: "9sp", text: "用吃、睡、惯例把真正的意愿麻醉掉。大事以后再说。" },
+  ),
+  cq(
+    "c-3sp-1sp-p",
+    "我把日子过得很稳、很正确，更像是：",
+    { subtype: "3sp", text: "用能干和撑住生活证明自己还在。一停工就慌。" },
+    { subtype: "1sp", text: "必须正确，否则就是不该发生的错。怒气变成担心和检查。" },
+  ),
+  cq(
+    "c-7sx-4sx-p",
+    "平淡让我受不了，更像是：",
+    { subtype: "7sx", text: "要被下一团火勾走。痛一来就换体验、换讲述。" },
+    { subtype: "4sx", text: "要张力来感觉自己还在。缺和特殊被点燃。" },
+  ),
+  cq(
+    "c-8sx-2sx-p",
+    "亲密必须很浓，更像是：",
+    { subtype: "8sx", text: "你是我的。占有和献身是同一件事，软绵绵不敢顶的人不算。" },
+    { subtype: "2sx", text: "我要被欲望。付出里有隐蔽的独占，被当成普通朋友会刺痛。" },
+  ),
+  cq(
+    "c-6sp-2sp-p",
+    "我用好相处、示弱或热络跟人靠近，更像是：",
+    { subtype: "6sp", text: "换安全、换被护着。怕被丢下，所以先让自己不具威胁。" },
+    { subtype: "2sp", text: "换优待、换被放在前面。骄傲在「我该被照顾」。" },
+  ),
+  cq(
+    "c-4so-6so-p",
+    "在团体里格格不入或很警惕，更像是：",
+    { subtype: "4so", text: "羞耻和残缺是我的身份。既想被懂，又怕一被接纳就变普通。" },
+    { subtype: "6so", text: "职责和立场压住不确定。怕两面、怕自己人破裂。" },
+  ),
+  cq(
+    "c-9sx-2sx-p",
+    "在亲密里我容易变成「我们」，更像是：",
+    { subtype: "9sx", text: "自己的意愿睡着了。有那个人才完整，一个人就发动不起来。" },
+    { subtype: "2sx", text: "我要成为他缺的那一味，让他离不开。这是占领，不只是跟着走。" },
+  ),
+  cq(
+    "c-3sx-8sx-p",
+    "我在意自己强不强、好不好看，更像是：",
+    { subtype: "3sx", text: "虚荣在魅力上：被选中、被要。失败是变得不可欲。" },
+    { subtype: "8sx", text: "生命力过量：占有和强度本身，不是演给谁看。" },
+  ),
+  cq(
+    "c-7so-2so-p",
+    "我为大家做事、画愿景，更像是：",
+    { subtype: "7so", text: "用理想把沉闷和痛苦抬走。牺牲也是一种计划，痛必须有出口。" },
+    { subtype: "2so", text: "用情感劳动换取在群体里被需要、被拥戴的位置。" },
+  ),
+  cq(
+    "c-7sp-3sp-p",
+    "我很会把生活安排得有退路、有效率，更像是：",
+    { subtype: "7sp", text: "机会和享受织成网。沉重一来就换成可解决的安排。" },
+    { subtype: "3sp", text: "用产出和靠谱证明自己。休息像堕落。" },
+  ),
+  cq(
+    "c-5sx-9sx-p",
+    "我把一个人当成出口，更像是：",
+    { subtype: "5sx", text: "世界仍吝啬，只把钥匙交给这一个灵魂。被辜负会把通道封死。" },
+    { subtype: "9sx", text: "在他里面睡着。边界变薄，自己的欲跟着你的欲走。" },
+  ),
+  cq(
+    "c-8so-6so-p",
+    "我对「自己人」和规则很硬，更像是：",
+    { subtype: "8so", text: "护场、出头、义气。不公落在所属团体上才会出手。" },
+    { subtype: "6so", text: "职责、立场、谁是叛徒。安全来自系统和忠诚。" },
+  ),
+  cq(
+    "c-9so-6so-p",
+    "我跟团体绑在一起，更像是：",
+    { subtype: "9so", text: "日程被大家填满，意见跟着场走。难做会让人不悦的决定。" },
+    { subtype: "6so", text: "用义务和正确立场压住万一。对不忠非常敏感。" },
+  ),
+  cq(
+    "c-4sp-1sp-p",
+    "我对自己很严、日子过得很紧，更像是：",
+    { subtype: "4sp", text: "自找苦吃是优越。不表演忧郁，苦往下咽。" },
+    { subtype: "1sp", text: "正确是安全。怒气变成担心、检查、把环境调对。" },
+  ),
+  cq(
+    "c-2sp-4sp-p",
+    "我觉得自己特殊、该被看见亏欠，更像是：",
+    { subtype: "2sp", text: "我该被优待、被照顾。被忽略就委屈或发作。" },
+    { subtype: "4sp", text: "我缺得更多所以更有资格活。反感被可怜，用更能熬来超过。" },
+  ),
+  cq(
+    "c-5so-1so-p",
+    "我在群体里较真、讲一套，更像是：",
+    { subtype: "5so", text: "用「我知道」占一个图腾位。可以发言，却很难无目的交心。" },
+    { subtype: "1so", text: "世界应该更公正。我绝不随俗，改革先于圆滑。" },
+  ),
+  cq(
+    "c-7sx-8sx-p",
+    "我要强度、要被勾走，更像是：",
+    { subtype: "7sx", text: "对人、地方、体验一见钟情，也容易转向下一团火。" },
+    { subtype: "8sx", text: "要融合到占有。强度对着那一个人，不是下一场演出。" },
+  ),
+
+  // —— 同号三本能（副型未拉开时） ——
+  cq(
+    "c-1sp-1so",
+    "我的「必须正确」更落在：",
+    { subtype: "1sp", text: "身体、家务、钱和安全。怕一松就出事。" },
+    { subtype: "1so", text: "公共的公正和程序。随大流像背叛自己的尺子。" },
+  ),
+  cq(
+    "c-1sp-1sx",
+    "怒气更冲着：",
+    { subtype: "1sp", text: "日常会不会出错、够不够干净稳妥。看起来像担心。" },
+    { subtype: "1sx", text: "亲近的人够不够认真。热忱、妒和纠正搅在一起。" },
+  ),
+  cq(
+    "c-1so-1sx",
+    "我更想改的是：",
+    { subtype: "1so", text: "团体、风气、不公正。我常成为提醒规则的人。" },
+    { subtype: "1sx", text: "那一个人。你怎么可以把热忱给错地方。" },
+  ),
+  cq(
+    "c-2sp-2so",
+    "骄傲更表现成：",
+    { subtype: "2sp", text: "我该被优待、被养。可爱或示弱比无私更能拿到资源。" },
+    { subtype: "2so", text: "我要在群体里成为不可或缺、被拥戴的人。助人是野心。" },
+  ),
+  cq(
+    "c-2sp-2sx",
+    "我更想从谁那里被放在前面：",
+    { subtype: "2sp", text: "能供养、能照顾我的人。被忽略就委屈。" },
+    { subtype: "2sx", text: "那一个被我征服的人。被当成只是朋友会刺痛。" },
+  ),
+  cq(
+    "c-2so-2sx",
+    "给予更像是为了：",
+    { subtype: "2so", text: "在圈子里站到显眼位置。谁重要，我心里有数。" },
+    { subtype: "2sx", text: "让这一个人离不开我。付出不能给别人。" },
+  ),
+  cq(
+    "c-3sp-3so",
+    "成功对我更意味着：",
+    { subtype: "3sp", text: "能养活、有保障、看起来能干。不爱空谈名声。" },
+    { subtype: "3so", text: "被公开看见。没观众的成就几乎不算。" },
+  ),
+  cq(
+    "c-3sp-3sx",
+    "我证明自己，更靠：",
+    { subtype: "3sp", text: "工作量、收入、把日子撑住。" },
+    { subtype: "3sx", text: "魅力、被选中、在在意的人眼前发光。" },
+  ),
+  cq(
+    "c-3so-3sx",
+    "我更在意的观众是：",
+    { subtype: "3so", text: "群体、圈子、头衔和比较。" },
+    { subtype: "3sx", text: "那个人眼里我有没有性与魅力上的竞争力。" },
+  ),
+  cq(
+    "c-4sp-4so",
+    "嫉妒在我这儿更像：",
+    { subtype: "4sp", text: "不表演忧郁。苦往下咽，用更能熬来超过。" },
+    { subtype: "4so", text: "在群体里是局外人。羞耻、残缺被看见，也因此特殊。" },
+  ),
+  cq(
+    "c-4sp-4sx",
+    "「我没有别人有的那块」，我更用来：",
+    { subtype: "4sp", text: "咬牙硬撑，反感被可怜。" },
+    { subtype: "4sx", text: "跟那一个人较劲。爱和恨可以迅速对调。" },
+  ),
+  cq(
+    "c-4so-4sx",
+    "特殊感更来自：",
+    { subtype: "4so", text: "在社会里放逐自己。既渴求被懂，又轻视一融入就普通。" },
+    { subtype: "4sx", text: "亲密里的竞争。平淡等于我被取消。" },
+  ),
+  cq(
+    "c-5sp-5so",
+    "我守住自己，更靠：",
+    { subtype: "5sp", text: "可撤退的房间和时间。少出门、少欠、少被看见。" },
+    { subtype: "5so", text: "专家、地图、「我知道」。给的是蒸馏过的内容，不是自己。" },
+  ),
+  cq(
+    "c-5sp-5sx",
+    "吝啬更针对：",
+    { subtype: "5sp", text: "全世界。堡垒是具体的，参与像失血。" },
+    { subtype: "5sx", text: "众人。对那一个懂我的人，却可以非常浓。" },
+  ),
+  cq(
+    "c-5so-5sx",
+    "我对外连接，更像是：",
+    { subtype: "5so", text: "通过观念和体系，而不是体温。" },
+    { subtype: "5sx", text: "通过一条秘密通道。那个人几乎是唯一出口。" },
+  ),
+  cq(
+    "c-6sp-6so",
+    "安全更来自：",
+    { subtype: "6sp", text: "亲切、联盟、被放进可靠的人的圈子。看起来不像怕。" },
+    { subtype: "6so", text: "义务、立场、程序和「正确的一边」。" },
+  ),
+  cq(
+    "c-6sp-6sx",
+    "恐惧翻出来时，我更像：",
+    { subtype: "6sp", text: "先让自己温暖、有用、不具威胁，换被保护。" },
+    { subtype: "6sx", text: "先武装成不好惹。宁可迎上去，也不停在怕里。" },
+  ),
+  cq(
+    "c-6so-6sx",
+    "我对抗不确定，更靠：",
+    { subtype: "6so", text: "集体任务、规则、谁是自己人。" },
+    { subtype: "6sx", text: "力量、锋利、一个能扛事也能对打的同盟。" },
+  ),
+  cq(
+    "c-7sp-7so",
+    "贪食更落地为：",
+    { subtype: "7sp", text: "人脉、享受的基础设施、具体的好吃好喝和退路。" },
+    { subtype: "7so", text: "为理想和大家推迟眼前的甜。牺牲仍是一种计划。" },
+  ),
+  cq(
+    "c-7sp-7sx",
+    "我躲开沉重，更靠：",
+    { subtype: "7sp", text: "把它变成可安排的事，或换成有用的朋友和舒服。" },
+    { subtype: "7sx", text: "被下一团火勾走。平淡像死，体验必须发光。" },
+  ),
+  cq(
+    "c-7so-7sx",
+    "「还有更多」，更冲着：",
+    { subtype: "7so", text: "更大的愿景、群体的未来。沉闷的义务除非通向意义。" },
+    { subtype: "7sx", text: "人、冒险、边缘体验。承诺随兴致来去。" },
+  ),
+  cq(
+    "c-8sp-8so",
+    "力量更用在：",
+    { subtype: "8sp", text: "地盘、胃口、谁说了算。生存先于演讲。" },
+    { subtype: "8so", text: "护自己人。帮派的头，弱者的盾。" },
+  ),
+  cq(
+    "c-8sp-8sx",
+    "过量更对着：",
+    { subtype: "8sp", text: "物资和边界。挡我的人推开就完。" },
+    { subtype: "8sx", text: "那一个人。亲密必须有穿透力。" },
+  ),
+  cq(
+    "c-8so-8sx",
+    "我更不能忍的是：",
+    { subtype: "8so", text: "我的人被欺、自己人背叛。" },
+    { subtype: "8sx", text: "关系若即若离、虚伪文雅、不够烈。" },
+  ),
+  cq(
+    "c-9sp-9so",
+    "怠惰更通过：",
+    { subtype: "9sp", text: "吃、睡、惯例和身体舒适。环境被打乱比理想被打乱更烦。" },
+    { subtype: "9so", text: "把日程交给团体。看起来很忙，忙的是归属。" },
+  ),
+  cq(
+    "c-9sp-9sx",
+    "我把自己麻醉在：",
+    { subtype: "9sp", text: "可重复的舒服里。冲突来时溜到身体里。" },
+    { subtype: "9sx", text: "那个人里。结合一理想化，自己的边界就变薄。" },
+  ),
+  cq(
+    "c-9so-9sx",
+    "「我们」对我更是：",
+    { subtype: "9so", text: "群体、会议、家庭或公司文化。我是其中一员。" },
+    { subtype: "9sx", text: "那一个他者。一个人时难以发动。" },
+  ),
+];
+
+export const COMPARE_MAP: Record<string, CompareQuestion> = Object.fromEntries(
+  COMPARE_BANK.map((q) => [q.id, q]),
+);
+
+function hashId(id: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function maybeFlip(q: CompareQuestion, seed: number): CompareQuestion {
+  const rng = mulberry32((seed >>> 0) ^ hashId(q.id));
+  if (rng() < 0.5) return q;
+  return { ...q, left: q.right, right: q.left };
+}
+
+export function shownCompareQuestions(
+  ids: string[],
+  seed: number,
+): CompareQuestion[] {
+  return ids
+    .map((id) => COMPARE_MAP[id])
+    .filter((q): q is CompareQuestion => Boolean(q))
+    .map((q) => maybeFlip(q, seed));
+}
+
+function itemsForPair(pair: string): CompareQuestion[] {
+  return COMPARE_BANK.filter((q) => q.pair === pair);
+}
+
+export type ComparePreview = {
+  triad: Array<{
+    center: CenterId;
+    type: TypeId;
+    subtype: SubtypeId;
+    runnerUpType: TypeId;
+    runnerUpSubtype: SubtypeId;
+    typeGap: number;
+    subtypeGap: number;
+  }>;
+  stage2Types: TypeId[];
+};
+
+/**
+ * 根据第二步后的三元组挑易混对照。
+ * 情欲接近、副型接近、原典 lookalike 优先；至少每区一题，至多 8 题。
+ */
+export function pickCompareQuestions(result: ComparePreview, seed: number): CompareQuestion[] {
+  type Want = { pair: string; weight: number };
+  const wanted: Want[] = [];
+
+  for (const slot of result.triad) {
+    wanted.push({
+      pair: typePair(slot.type, slot.runnerUpType),
+      weight: slot.typeGap <= 6 ? 4 : slot.typeGap <= 12 ? 2 : 1,
+    });
+    if (slot.subtype !== slot.runnerUpSubtype) {
+      wanted.push({
+        pair: subPair(slot.subtype, slot.runnerUpSubtype),
+        weight: slot.subtypeGap <= 6 ? 4 : slot.subtypeGap <= 12 ? 2 : 1,
+      });
+    }
+    for (const look of SUBTYPE_MAP[slot.subtype].lookalikes) {
+      const lookType = SUBTYPE_MAP[look].type;
+      const sameCenter = centerOf(lookType) === slot.center;
+      if (!sameCenter && !result.stage2Types.includes(lookType)) continue;
+      wanted.push({
+        pair: subPair(slot.subtype, look),
+        weight: sameCenter ? 2 : 1,
+      });
+    }
+  }
+
+  wanted.sort((a, b) => b.weight - a.weight);
+
+  const picked: CompareQuestion[] = [];
+  const used = new Set<string>();
+  const usedPair = new Set<string>();
+
+  const take = (pair: string, max: number) => {
+    if (picked.length >= 8) return;
+    const list = itemsForPair(pair);
+    let n = 0;
+    for (const q of list) {
+      if (used.has(q.id)) continue;
+      if (n >= max) break;
+      picked.push(q);
+      used.add(q.id);
+      usedPair.add(pair);
+      n += 1;
+      if (picked.length >= 8) return;
+    }
+  };
+
+  for (const w of wanted) {
+    if (w.weight >= 3) take(w.pair, 2);
+  }
+  for (const w of wanted) {
+    if (!usedPair.has(w.pair)) take(w.pair, 1);
+  }
+
+  // 每区至少一题：用该区领先情欲 vs 次席
+  if (picked.length < 3) {
+    for (const slot of result.triad) {
+      take(typePair(slot.type, slot.runnerUpType), 1);
+    }
+  }
+
+  const rng = mulberry32(seed + 17);
+  const shuffled = [...picked];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, 8);
+}
+
+export function choiceOf(value: number | undefined): CompareChoice | undefined {
+  if (value === undefined) return undefined;
+  if (value === COMPARE_BOTH) return "both";
+  if (value === COMPARE_NEITHER) return "neither";
+  if (value <= 0) return "left";
+  if (value === 1) return "lean-left";
+  if (value === 2) return "mid";
+  if (value === 3) return "lean-right";
+  return "right";
+}
+
+export function isCompareValue(v: number | undefined): boolean {
+  return v === COMPARE_BOTH || v === COMPARE_NEITHER || (v !== undefined && v >= 0 && v <= 4);
+}
+
+const CHOICE_NOTE: Record<CompareChoice, string> = {
+  left: "明确偏左",
+  "lean-left": "略偏左",
+  mid: "居中，未拉开",
+  "lean-right": "略偏右",
+  right: "明确偏右",
+  both: "两个都像：结构重叠，不作决胜",
+  neither: "两个都不像：两边同时降权",
+};
+
+export function describeOutcome(
+  q: CompareQuestion,
+  value: number | undefined,
+): CompareOutcome | null {
+  const choice = choiceOf(value);
+  if (!choice) return null;
+  return {
+    id: q.id,
+    pair: q.pair,
+    stem: q.stem,
+    choice,
+    leftLabel: poleLabel(q.left),
+    rightLabel: poleLabel(q.right),
+    note: CHOICE_NOTE[choice],
+  };
+}
+
+/** 给计分用：一边加分、一边减分的系数。both/neither 走特殊路径。 */
+export function compareNudge(value: number): {
+  kind: "slider" | "both" | "neither";
+  toward: -1 | 0 | 1;
+  mag: number;
+} {
+  if (value === COMPARE_BOTH) return { kind: "both", toward: 0, mag: 0 };
+  if (value === COMPARE_NEITHER) return { kind: "neither", toward: 0, mag: 0 };
+  const t = (Math.max(0, Math.min(4, value)) - 2) / 2;
+  const mag = Math.abs(t);
+  const toward = mag < 0.2 ? 0 : t < 0 ? -1 : 1;
+  return { kind: "slider", toward: toward as -1 | 0 | 1, mag };
+}
+
+export function centerOfPole(p: ComparePole) {
+  const type = p.subtype ? SUBTYPE_MAP[p.subtype].type : p.type;
+  return type ? centerOf(type) : undefined;
+}

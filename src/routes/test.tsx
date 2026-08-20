@@ -1,9 +1,15 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
+import { CompareBlock } from "@/components/compare-block";
 import { QuestionBlock } from "@/components/question-block";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
+import {
+  shownCompareQuestions,
+  STAGE3_HELP,
+  type CompareQuestion,
+} from "@/lib/naranjo/compare";
 import {
   STEP1,
   STAGE2_HELP,
@@ -23,9 +29,11 @@ function TestPage() {
   const hydrated = useTestStore((s) => s.hydrated);
   const answers = useTestStore((s) => s.answers);
   const stage2Types = useTestStore((s) => s.stage2Types);
+  const stage3Ids = useTestStore((s) => s.stage3Ids);
   const shuffleSeed = useTestStore((s) => s.shuffleSeed);
   const setAnswer = useTestStore((s) => s.setAnswer);
   const goStage2 = useTestStore((s) => s.goStage2);
+  const goStage3 = useTestStore((s) => s.goStage3);
   const finish = useTestStore((s) => s.finish);
   const back = useTestStore((s) => s.back);
   const reset = useTestStore((s) => s.reset);
@@ -35,8 +43,14 @@ function TestPage() {
 
   const questions: Question[] = useMemo(() => {
     if (stage === 1) return interleaveQuestions(STEP1, shuffleSeed || 1);
-    return stage2QuestionsFor(stage2Types, shuffleSeed || 1);
+    if (stage === 2) return stage2QuestionsFor(stage2Types, shuffleSeed || 1);
+    return [];
   }, [stage, stage2Types, shuffleSeed]);
+
+  const compareItems: CompareQuestion[] = useMemo(() => {
+    if (stage !== 3) return [];
+    return shownCompareQuestions(stage3Ids, shuffleSeed || 1);
+  }, [stage, stage3Ids, shuffleSeed]);
 
   const groups = useMemo(
     () =>
@@ -64,11 +78,17 @@ function TestPage() {
     return <Navigate to="/result" />;
   }
 
-  const done = questions.filter((q) => answers[q.id] !== undefined).length;
-  const estimate = stage === 1 ? STEP1.length + 27 : questions.length;
+  const total = stage === 3 ? compareItems.length : questions.length;
+  const done =
+    stage === 3
+      ? compareItems.filter((q) => answers[q.id] !== undefined).length
+      : questions.filter((q) => answers[q.id] !== undefined).length;
 
   const jumpMissing = () => {
-    const ids = unanswered(questions, answers);
+    const ids =
+      stage === 3
+        ? compareItems.filter((q) => answers[q.id] === undefined).map((q) => q.id)
+        : unanswered(questions, answers);
     setMissing(ids);
     if (ids[0]) {
       document.getElementById(`q-${ids[0]}`)?.scrollIntoView({
@@ -79,7 +99,10 @@ function TestPage() {
   };
 
   const onNext = () => {
-    const ids = unanswered(questions, answers);
+    const ids =
+      stage === 3
+        ? compareItems.filter((q) => answers[q.id] === undefined).map((q) => q.id)
+        : unanswered(questions, answers);
     if (ids.length) {
       setMissing(ids);
       document.getElementById(`q-${ids[0]}`)?.scrollIntoView({
@@ -94,9 +117,24 @@ function TestPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+    if (stage === 2) {
+      goStage3();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
     finish();
     void navigate({ to: "/result" });
   };
+
+  const stageTitle =
+    stage === 1
+      ? "第一步：激情与固着（混排）"
+      : stage === 2
+        ? "第二步：副型结构（混排）"
+        : "第三步：易混结构对照";
+
+  const nextLabel =
+    stage === 1 ? "进入第二步" : stage === 2 ? "进入对照" : "查看结果";
 
   return (
     <SiteShell>
@@ -104,36 +142,33 @@ function TestPage() {
         <div
           className="h-full bg-primary transition-[width] duration-300"
           style={{
-            width: `${questions.length ? (done / questions.length) * 100 : 0}%`,
+            width: `${total ? (done / total) * 100 : 0}%`,
           }}
         />
       </div>
 
       <header className="text-center">
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
-        <p className="mt-1 text-sm text-muted">
-          {stage === 1 ? "第一步：激情与固着（混排）" : "第二步：副型结构（混排）"}
-        </p>
+        <p className="mt-1 text-sm text-muted">{stageTitle}</p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
-          <span>本步 {questions.length} 题</span>
+          <span>本步 {total} 题</span>
           <span>已完成 {done} 题</span>
           <span>
-            本页 {done}／{questions.length}
+            本页 {done}／{total}
           </span>
-          {stage === 1 && <span>全程约 {estimate} 题</span>}
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <span className="text-[0.7rem] text-subtle">进度将自动保存在当前浏览器</span>
+          <span className="text-xs text-subtle">进度将自动保存在当前浏览器</span>
           <button
             type="button"
-            className="rounded-full border border-border bg-surface px-3 py-1 text-[0.7rem] text-muted hover:text-fg"
+            className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted hover:text-fg"
             onClick={() => setShowHelp((v) => !v)}
           >
             {showHelp ? "收起说明" : "如何作答"}
           </button>
           <button
             type="button"
-            className="rounded-full border border-border bg-surface px-3 py-1 text-[0.7rem] text-unlike hover:text-fg"
+            className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-unlike hover:text-fg"
             onClick={() => {
               if (confirm("清除全部进度并从头开始？")) reset();
             }}
@@ -141,52 +176,74 @@ function TestPage() {
             清除进度／重新开始
           </button>
         </div>
-        <p className="mx-auto mt-3 max-w-xl rounded-lg border border-border bg-surface px-3 py-2 text-[0.72rem] leading-relaxed text-subtle">
-          {TEST_INSTRUCTION}
+        <p className="mx-auto mt-3 max-w-xl rounded-lg border border-border bg-surface px-3 py-2 text-xs leading-relaxed text-subtle">
+          {stage === 3 ? STAGE3_HELP : TEST_INSTRUCTION}
         </p>
         {showHelp && (
           <div className="mx-auto mt-4 max-w-xl rounded-xl border border-border bg-surface p-4 text-left text-sm leading-relaxed text-muted">
             {stage === 1 ? (
               <ul className="space-y-2">
+                <li>滑动选择：左端是不像我，右端是像我。不要停在正中图省事。</li>
                 <li>不要按社会赞许或「我应该是好人」来选。</li>
                 <li>不要猜题目属于哪一号。题目已打散，没有型号分区。</li>
                 <li>测的是注意如何组织（激情与固着），不是你做了什么事。</li>
-                <li>心脑腹的重视从这些大类里计算，不会先单独测腹区。</li>
-                <li>全选极端、全选中立、或正反句子都点「极像」，权重会被下调。</li>
+                <li>全选极端、全选中立、或正反句子都拉到「像我」，权重会被下调。</li>
               </ul>
-            ) : (
+            ) : stage === 2 ? (
               <p>{STAGE2_HELP}</p>
+            ) : (
+              <ul className="space-y-2">
+                <li>左右是两种内在运作。滑向更像的一边。</li>
+                <li>如果两边写的都是你，选「两个都像我」——这会当作重叠，不决胜。</li>
+                <li>如果两边都不是你，选「两个都不像我」——两边都会降权。</li>
+                <li>不要猜测这是哪两个副型。</li>
+              </ul>
             )}
           </div>
         )}
       </header>
 
-      <div className="mt-8 space-y-4">
-        {groups.map((g) => (
-          <Section key={g.key} title={g.title} desc={g.desc}>
-            {g.items.map((q) => (
-              <QuestionBlock
-                key={q.id}
-                question={q}
-                index={questions.findIndex((x) => x.id === q.id)}
-                value={answers[q.id]}
-                onChange={(v) => setAnswer(q.id, v)}
-                highlight={missing.includes(q.id)}
-              />
-            ))}
-          </Section>
-        ))}
-      </div>
+      {stage === 3 ? (
+        <div className="mt-8 space-y-4">
+          {compareItems.map((q, i) => (
+            <CompareBlock
+              key={q.id}
+              question={q}
+              index={i}
+              value={answers[q.id]}
+              onChange={(v) => setAnswer(q.id, v)}
+              highlight={missing.includes(q.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-8 space-y-4">
+          {groups.map((g) => (
+            <Section key={g.key} title={g.title} desc={g.desc}>
+              {g.items.map((q) => (
+                <QuestionBlock
+                  key={q.id}
+                  question={q}
+                  index={questions.findIndex((x) => x.id === q.id)}
+                  value={answers[q.id]}
+                  onChange={(v) => setAnswer(q.id, v)}
+                  highlight={missing.includes(q.id)}
+                />
+              ))}
+            </Section>
+          ))}
+        </div>
+      )}
 
       <div className="mt-8 flex flex-col items-center gap-3">
         <div className="flex w-full max-w-md gap-2">
-          {stage === 2 && (
+          {stage !== 1 && (
             <Button variant="secondary" className="flex-1" onClick={() => back()}>
               返回上一步
             </Button>
           )}
           <Button className="flex-1" onClick={onNext}>
-            {stage === 1 ? "进入第二步" : "查看结果"}
+            {nextLabel}
           </Button>
         </div>
         {missing.length > 0 && (

@@ -50,7 +50,7 @@ export function SiteHeader() {
               <SignedOut>
                 <Link
                   to="/login"
-                  className="rounded-md px-2 py-1.5 hover:bg-surface-2 hover:text-fg"
+                  className="rounded-md bg-primary px-3 py-1.5 text-primary-fg hover:opacity-92"
                 >
                   登录
                 </Link>

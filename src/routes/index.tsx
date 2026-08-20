@@ -70,6 +70,12 @@ function Home() {
         <p className="mt-4 text-xs text-subtle">
           三步混排 · 每次重新开始会打乱题目顺序 · 进度保存在本机浏览器
         </p>
+        <p className="mt-2 text-xs text-muted">
+          <Link to="/login" className="underline-offset-4 hover:underline">
+            登录 / 注册
+          </Link>
+          后可把结果存进账户；不登录也能做完并导出 PDF。
+        </p>
       </section>
 
       <section className="mt-14 grid gap-3 sm:grid-cols-3">

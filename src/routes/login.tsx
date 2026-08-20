@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
-import { accountToEmail } from "@/lib/auth/account";
+import { accountToEmail, authErrorMessage } from "@/lib/auth/account";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 
@@ -48,18 +48,14 @@ function Login() {
           name: name.trim() || account.trim(),
         });
         if (err) {
-          setError(
-            err.message === "User already exists"
-              ? "这个账号已经注册过，请直接登录。"
-              : (err.message ?? "注册失败，请再试。"),
-          );
+          setError(authErrorMessage(err.message));
           setBusy(false);
           return;
         }
       } else {
         const { error: err } = await authClient.signIn.email({ email, password });
         if (err) {
-          setError("账号或密码不对。");
+          setError(authErrorMessage(err.message));
           setBusy(false);
           return;
         }

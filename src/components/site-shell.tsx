@@ -1,10 +1,15 @@
 import { useEffect, type ReactNode } from "react";
-import { useTestStore } from "@/lib/naranjo/store";
+import { freshSeed, useTestStore } from "@/lib/naranjo/store";
 import { SiteHeader } from "./site-header";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   useEffect(() => {
+    if (useTestStore.getState().hydrated) return;
     void Promise.resolve(useTestStore.persist.rehydrate()).then(() => {
+      const s = useTestStore.getState();
+      if (!s.shuffleSeed) {
+        useTestStore.setState({ shuffleSeed: freshSeed() });
+      }
       useTestStore.getState().hydrateResult();
       useTestStore.getState().markHydrated();
     });

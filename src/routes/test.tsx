@@ -170,7 +170,7 @@ function TestPage() {
             type="button"
             className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-unlike hover:text-fg"
             onClick={() => {
-              if (confirm("清除全部进度并从头开始？")) reset();
+              if (confirm("清除全部进度并换一套新的题目顺序？")) reset();
             }}
           >
             清除进度／重新开始

@@ -13,6 +13,16 @@ import {
 
 export type Stage = 1 | 2 | 3 | "result";
 
+export function freshSeed(): number {
+  let r = (Date.now() >>> 0) ^ Math.floor(Math.random() * 0xffffffff);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    r ^= buf[0]!;
+  }
+  return (r >>> 0) || 1;
+}
+
 type TestState = {
   answers: Answers;
   stage: Stage;
@@ -39,7 +49,7 @@ const empty = {
   stage3Ids: [] as string[],
   result: null as Result | null,
   consentAt: null as number | null,
-  shuffleSeed: Math.floor(Math.random() * 1_000_000_000),
+  shuffleSeed: 0,
   hydrated: false,
 };
 
@@ -92,7 +102,7 @@ export const useTestStore = create<TestState>()(
       reset: () =>
         set({
           ...empty,
-          shuffleSeed: Math.floor(Math.random() * 1_000_000_000),
+          shuffleSeed: freshSeed(),
           hydrated: true,
         }),
       markHydrated: () => set({ hydrated: true }),
@@ -108,7 +118,7 @@ export const useTestStore = create<TestState>()(
       },
     }),
     {
-      name: "naranjo-27-v5",
+      name: "naranjo-27-v6",
       skipHydration: true,
       partialize: (s) => ({
         answers: s.answers,

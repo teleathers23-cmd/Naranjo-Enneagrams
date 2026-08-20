@@ -408,7 +408,7 @@ function ResultPage() {
         <Button
           variant="outline"
           onClick={() => {
-            if (confirm("清除进度并重测？")) {
+            if (confirm("清除进度并换一套新的题目顺序重测？")) {
               reset();
               void navigate({ to: "/test" });
             }

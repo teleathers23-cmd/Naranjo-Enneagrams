@@ -1084,32 +1084,16 @@ function bucketKey(q: Question): string {
   return q.id;
 }
 
-/** 按型号/中心分桶打散，避免同一号连在一起。 */
+/** 按型号/中心分桶打散，避免同一号连在一起。每次种子都会得到不同顺序。 */
 export function interleaveQuestions(qs: Question[], seed: number): Question[] {
-  const rng = mulberry32(seed || 1);
-  const buckets = new Map<string, Question[]>();
-  for (const q of qs) {
-    const k = bucketKey(q);
-    const list = buckets.get(k) ?? [];
-    list.push(q);
-    buckets.set(k, list);
-  }
-  for (const [k, list] of buckets) {
-    buckets.set(k, shuffle(list, rng));
-  }
-  const keys = [...buckets.keys()];
+  const rng = mulberry32(seed >>> 0 || 1);
+  const remaining = shuffle(qs, rng);
   const out: Question[] = [];
-  while (out.length < qs.length) {
-    const last = out[out.length - 1];
-    const lastKey = last ? bucketKey(last) : null;
-    const candidates = keys
-      .map((k) => [k, buckets.get(k)!] as const)
-      .filter(([, list]) => list.length > 0)
-      .sort((a, b) => b[1].length - a[1].length || rng() - 0.5);
-    const pick =
-      candidates.find(([k]) => k !== lastKey) ?? candidates[0];
-    if (!pick) break;
-    out.push(pick[1].shift()!);
+  while (remaining.length) {
+    const lastKey = out.length ? bucketKey(out[out.length - 1]!) : null;
+    let idx = remaining.findIndex((q) => bucketKey(q) !== lastKey);
+    if (idx < 0) idx = 0;
+    out.push(remaining.splice(idx, 1)[0]!);
   }
   return out;
 }

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { EnneagramGlyph } from "@/components/enneagram-glyph";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,18 @@ import { useTestStore } from "@/lib/naranjo/store";
 export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
+  const navigate = useNavigate();
   const stage = useTestStore((s) => s.stage);
   const answers = useTestStore((s) => s.answers);
+  const reset = useTestStore((s) => s.reset);
   const hasProgress = Object.keys(answers).length > 0;
+  const inProgress = hasProgress && stage !== "result";
+
+  const startFresh = () => {
+    if (hasProgress && !confirm("清除全部进度，并换一套新的题目顺序？")) return;
+    reset();
+    void navigate({ to: "/test" });
+  };
 
   return (
     <SiteShell>
@@ -27,17 +36,39 @@ function Home() {
           依纳兰霍原典编制。结果是心–脑–腹三元组（如 sp3-so6-sp8），顺序按你更从哪一区过日子，不是单一主型。
         </p>
         <div className="mt-8 flex w-full max-w-sm flex-col gap-2 sm:flex-row sm:justify-center">
-          <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link to="/test">
-              {hasProgress && stage !== "result" ? "继续作答" : "开始测验"}
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-            <Link to="/types">阅读二十七性格</Link>
-          </Button>
+          {stage === "result" ? (
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link to="/result">查看结果</Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link to="/test">{inProgress ? "继续作答" : "开始测验"}</Link>
+            </Button>
+          )}
+          {hasProgress ? (
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={startFresh}
+            >
+              重新开始
+            </Button>
+          ) : (
+            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+              <Link to="/types">阅读二十七性格</Link>
+            </Button>
+          )}
         </div>
+        {hasProgress ? (
+          <div className="mt-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/types">阅读二十七性格</Link>
+            </Button>
+          </div>
+        ) : null}
         <p className="mt-4 text-xs text-subtle">
-          三步混排 · 进度保存在本机浏览器
+          三步混排 · 每次重新开始会打乱题目顺序 · 进度保存在本机浏览器
         </p>
       </section>
 

@@ -73,7 +73,7 @@ function Home() {
       <section className="mt-12">
         <h2 className="font-display text-lg font-medium">三种本能</h2>
         <p className="mt-1 text-sm text-muted">
-          本能不单独决定类型。它使同一情欲长成三种不同性格。
+          本能不单独决定类型。它使同一情欲长成三种不同性格。性本能是一对一的强度，对象可以是人、事或物，不限于情爱。
         </p>
         <ul className="mt-4 grid gap-3 sm:grid-cols-3">
           {INSTINCTS.map((i) => (

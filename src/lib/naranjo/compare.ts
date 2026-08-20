@@ -221,9 +221,9 @@ export const COMPARE_BANK: CompareQuestion[] = [
   // —— 易混副型（核心结构对照） ——
   cq(
     "c-2sx-3sx-p",
-    "在那一个人面前，我更在意的是：",
-    { subtype: "2sx", text: "我是否被欲望、是否成为他缺的那一味。" },
-    { subtype: "3sx", text: "我是否有吸引力、是否被选中、看起来能不能赢。" },
+    "在我认定的那一个一对一焦点面前（人、事或物），我更在意的是：",
+    { subtype: "2sx", text: "我是否被这个对象选中、是否成为它所缺的那一味。" },
+    { subtype: "3sx", text: "我有没有磁性、能不能赢、看起来是否被要。" },
   ),
   cq(
     "c-1sp-6sp-p",
@@ -240,7 +240,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
   cq(
     "c-1sx-8sx-p",
     "我对亲近的人很烈，更像是：",
-    { subtype: "1sx", text: "要把他改成对的样子。妒和义愤搅在一起。" },
+    { subtype: "1sx", text: "要把这个一对一的对象改成对的样子。妒和义愤搅在一起。" },
     { subtype: "8sx", text: "要占有、要穿透。虚伪和软都不许，平淡等于没发生。" },
   ),
   cq(
@@ -251,15 +251,15 @@ export const COMPARE_BANK: CompareQuestion[] = [
   ),
   cq(
     "c-4sx-8sx-p",
-    "对那一个重要的人，我更像是：",
-    { subtype: "4sx", text: "较劲、不能当第二。你有的我必须更好，否则就恨。" },
+    "对认定的那一个一对一焦点，我更像是：",
+    { subtype: "4sx", text: "较劲、不能当第二。它有的我必须更好，否则就恨。" },
     { subtype: "8sx", text: "要占有、要烈。控制和献身缠在一起。" },
   ),
   cq(
     "c-5sx-4sx-p",
     "我把一个懂我的人看得极重，更像是：",
-    { subtype: "5sx", text: "只把内在交给这一条秘密通道，怕被众人吸干。" },
-    { subtype: "4sx", text: "这个人有的我必须更好，关系是证明我特不特殊。" },
+    { subtype: "5sx", text: "只把内在交给这一条一对一通道，怕洒给众人。" },
+    { subtype: "4sx", text: "这个焦点有的我必须更好，关系或投入是证明我特不特殊。" },
   ),
   cq(
     "c-8so-2so-p",
@@ -299,9 +299,9 @@ export const COMPARE_BANK: CompareQuestion[] = [
   ),
   cq(
     "c-8sx-2sx-p",
-    "亲密必须很浓，更像是：",
-    { subtype: "8sx", text: "你是我的。占有和献身是同一件事，软绵绵不敢顶的人不算。" },
-    { subtype: "2sx", text: "我要被欲望。付出里有隐蔽的独占，被当成普通朋友会刺痛。" },
+    "一对一必须很浓，更像是：",
+    { subtype: "8sx", text: "这个焦点是我的。占有和献身是同一件事，温水不算。" },
+    { subtype: "2sx", text: "我要被这个对象选中。付出里有隐蔽的独占，可替换会刺痛。" },
   ),
   cq(
     "c-6sp-2sp-p",
@@ -317,14 +317,14 @@ export const COMPARE_BANK: CompareQuestion[] = [
   ),
   cq(
     "c-9sx-2sx-p",
-    "在亲密里我容易变成「我们」，更像是：",
-    { subtype: "9sx", text: "自己的意愿睡着了。有那个人才完整，一个人就发动不起来。" },
-    { subtype: "2sx", text: "我要成为他缺的那一味，让他离不开。这是占领，不只是跟着走。" },
+    "在一对一里我容易变成「我们／它怎样就怎样」，更像是：",
+    { subtype: "9sx", text: "自己的意愿睡着了。有这个焦点才完整，单独就发动不起来。" },
+    { subtype: "2sx", text: "我要成为它所缺的那一味，让它离不开。这是占领，不只是跟着走。" },
   ),
   cq(
     "c-3sx-8sx-p",
     "我在意自己强不强、好不好看，更像是：",
-    { subtype: "3sx", text: "虚荣在魅力上：被选中、被要。失败是变得不可欲。" },
+    { subtype: "3sx", text: "虚荣在一对一的磁性上：被选中、被要。失败是变得不可欲。" },
     { subtype: "8sx", text: "生命力过量：占有和强度本身，不是演给谁看。" },
   ),
   cq(
@@ -342,8 +342,8 @@ export const COMPARE_BANK: CompareQuestion[] = [
   cq(
     "c-5sx-9sx-p",
     "我把一个人当成出口，更像是：",
-    { subtype: "5sx", text: "世界仍吝啬，只把钥匙交给这一个灵魂。被辜负会把通道封死。" },
-    { subtype: "9sx", text: "在他里面睡着。边界变薄，自己的欲跟着你的欲走。" },
+    { subtype: "5sx", text: "世界仍吝啬，只把钥匙交给这一条通道。被辜负会封死。" },
+    { subtype: "9sx", text: "在这个焦点里面睡着。边界变薄，自己的欲跟着它走。" },
   ),
   cq(
     "c-8so-6so-p",
@@ -379,7 +379,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-7sx-8sx-p",
     "我要强度、要被勾走，更像是：",
     { subtype: "7sx", text: "对人、地方、体验一见钟情，也容易转向下一团火。" },
-    { subtype: "8sx", text: "要融合到占有。强度对着那一个人，不是下一场演出。" },
+    { subtype: "8sx", text: "要融合到占有。强度对着这一个一对一的焦点，不是下一场演出。" },
   ),
 
   // —— 同号三本能（副型未拉开时） ——
@@ -393,13 +393,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-1sp-1sx",
     "怒气更冲着：",
     { subtype: "1sp", text: "日常会不会出错、够不够干净稳妥。看起来像担心。" },
-    { subtype: "1sx", text: "亲近的人够不够认真。热忱、妒和纠正搅在一起。" },
+    { subtype: "1sx", text: "这个一对一的对象够不够认真。热忱、妒和纠正搅在一起。" },
   ),
   cq(
     "c-1so-1sx",
     "我更想改的是：",
     { subtype: "1so", text: "团体、风气、不公正。我常成为提醒规则的人。" },
-    { subtype: "1sx", text: "那一个人。你怎么可以把热忱给错地方。" },
+    { subtype: "1sx", text: "这一个焦点。你怎么可以把热忱给错地方。" },
   ),
   cq(
     "c-2sp-2so",
@@ -411,13 +411,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-2sp-2sx",
     "我更想从谁那里被放在前面：",
     { subtype: "2sp", text: "能供养、能照顾我的人。被忽略就委屈。" },
-    { subtype: "2sx", text: "那一个被我征服的人。被当成只是朋友会刺痛。" },
+    { subtype: "2sx", text: "那一个被我征服的焦点。被当成可替换会刺痛。" },
   ),
   cq(
     "c-2so-2sx",
     "给予更像是为了：",
     { subtype: "2so", text: "在圈子里站到显眼位置。谁重要，我心里有数。" },
-    { subtype: "2sx", text: "让这一个人离不开我。付出不能给别人。" },
+    { subtype: "2sx", text: "让这一个对象离不开我。付出不能给别处。" },
   ),
   cq(
     "c-3sp-3so",
@@ -429,13 +429,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-3sp-3sx",
     "我证明自己，更靠：",
     { subtype: "3sp", text: "工作量、收入、把日子撑住。" },
-    { subtype: "3sx", text: "魅力、被选中、在在意的人眼前发光。" },
+    { subtype: "3sx", text: "魅力、被选中、在认定的焦点面前发光。" },
   ),
   cq(
     "c-3so-3sx",
     "我更在意的观众是：",
     { subtype: "3so", text: "群体、圈子、头衔和比较。" },
-    { subtype: "3sx", text: "那个人眼里我有没有性与魅力上的竞争力。" },
+    { subtype: "3sx", text: "在这个一对一里我有没有磁性与竞争力。" },
   ),
   cq(
     "c-4sp-4so",
@@ -447,13 +447,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-4sp-4sx",
     "「我没有别人有的那块」，我更用来：",
     { subtype: "4sp", text: "咬牙硬撑，反感被可怜。" },
-    { subtype: "4sx", text: "跟那一个人较劲。爱和恨可以迅速对调。" },
+    { subtype: "4sx", text: "跟这一个焦点较劲。投入和攻击可以迅速对调。" },
   ),
   cq(
     "c-4so-4sx",
     "特殊感更来自：",
     { subtype: "4so", text: "在社会里放逐自己。既渴求被懂，又轻视一融入就普通。" },
-    { subtype: "4sx", text: "亲密里的竞争。平淡等于我被取消。" },
+    { subtype: "4sx", text: "一对一里的竞争。平淡等于我被取消。" },
   ),
   cq(
     "c-5sp-5so",
@@ -465,13 +465,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-5sp-5sx",
     "吝啬更针对：",
     { subtype: "5sp", text: "全世界。堡垒是具体的，参与像失血。" },
-    { subtype: "5sx", text: "众人。对那一个懂我的人，却可以非常浓。" },
+    { subtype: "5sx", text: "众人。对那一条一对一通道，却可以非常浓。" },
   ),
   cq(
     "c-5so-5sx",
     "我对外连接，更像是：",
     { subtype: "5so", text: "通过观念和体系，而不是体温。" },
-    { subtype: "5sx", text: "通过一条秘密通道。那个人几乎是唯一出口。" },
+    { subtype: "5sx", text: "通过一条秘密通道。那一个焦点几乎是唯一出口。" },
   ),
   cq(
     "c-6sp-6so",
@@ -519,7 +519,7 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-8sp-8sx",
     "过量更对着：",
     { subtype: "8sp", text: "物资和边界。挡我的人推开就完。" },
-    { subtype: "8sx", text: "那一个人。亲密必须有穿透力。" },
+    { subtype: "8sx", text: "这一个一对一的焦点。必须有穿透力，温水不算。" },
   ),
   cq(
     "c-8so-8sx",
@@ -537,13 +537,13 @@ export const COMPARE_BANK: CompareQuestion[] = [
     "c-9sp-9sx",
     "我把自己麻醉在：",
     { subtype: "9sp", text: "可重复的舒服里。冲突来时溜到身体里。" },
-    { subtype: "9sx", text: "那个人里。结合一理想化，自己的边界就变薄。" },
+    { subtype: "9sx", text: "这个焦点里。结合一理想化，自己的边界就变薄。" },
   ),
   cq(
     "c-9so-9sx",
     "「我们」对我更是：",
     { subtype: "9so", text: "群体、会议、家庭或公司文化。我是其中一员。" },
-    { subtype: "9sx", text: "那一个他者。一个人时难以发动。" },
+    { subtype: "9sx", text: "那一个一对一的对象。单独时难以发动。" },
   ),
 ];
 

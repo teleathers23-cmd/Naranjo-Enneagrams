@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { freshSeed, useTestStore } from "@/lib/naranjo/store";
 import { SiteHeader } from "./site-header";
@@ -25,6 +26,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-3xl flex-col gap-1 px-4 py-6 text-center text-xs text-subtle">
           <p>依克劳迪奥·纳兰霍（Claudio Naranjo）性格学原典编制。</p>
           <p>测验只作筛选，不能替代长期自我观察。题目为独立撰写，非原文摘录。</p>
+          <p>
+            <Link to="/admin" className="hover:text-muted">
+              管理
+            </Link>
+          </p>
         </div>
       </footer>
     </div>

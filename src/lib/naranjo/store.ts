@@ -32,6 +32,7 @@ type TestState = {
   consentAt: number | null;
   shuffleSeed: number;
   hydrated: boolean;
+  submittedId: string | null;
   setAnswer: (id: string, value: number) => void;
   goStage2: () => boolean;
   goStage3: () => boolean;
@@ -40,6 +41,7 @@ type TestState = {
   reset: () => void;
   hydrateResult: () => void;
   markHydrated: () => void;
+  markSubmitted: (id: string) => void;
 };
 
 const empty = {
@@ -51,6 +53,7 @@ const empty = {
   consentAt: null as number | null,
   shuffleSeed: 0,
   hydrated: false,
+  submittedId: null as string | null,
 };
 
 export const useTestStore = create<TestState>()(
@@ -90,7 +93,7 @@ export const useTestStore = create<TestState>()(
         const { answers, stage2Types, stage3Ids, shuffleSeed } = get();
         const types = stage2Types.length ? stage2Types : pickStage2Types(answers);
         const result = score(answers, types, stage3Ids, shuffleSeed || 1);
-        set({ stage: "result", result, stage2Types: types });
+        set({ stage: "result", result, stage2Types: types, submittedId: null });
         return true;
       },
       back: () => {
@@ -106,6 +109,7 @@ export const useTestStore = create<TestState>()(
           hydrated: true,
         }),
       markHydrated: () => set({ hydrated: true }),
+      markSubmitted: (id) => set({ submittedId: id }),
       hydrateResult: () => {
         const { answers, stage2Types, stage3Ids, stage, shuffleSeed } = get();
         if (stage !== "result") return;
@@ -128,6 +132,7 @@ export const useTestStore = create<TestState>()(
         result: s.result,
         consentAt: s.consentAt,
         shuffleSeed: s.shuffleSeed,
+        submittedId: s.submittedId,
       }),
     },
   ),

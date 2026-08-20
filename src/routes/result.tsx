@@ -26,6 +26,7 @@ import {
 } from "@/lib/naranjo/scoring";
 import { useTestStore } from "@/lib/naranjo/store";
 import { saveMyResult } from "@/lib/results";
+import { recordSubmission } from "@/lib/submissions";
 
 export const Route = createFileRoute("/result")({ component: ResultPage });
 
@@ -49,6 +50,9 @@ function ResultPage() {
   const hydrateResult = useTestStore((s) => s.hydrateResult);
   const reset = useTestStore((s) => s.reset);
   const back = useTestStore((s) => s.back);
+  const answers = useTestStore((s) => s.answers);
+  const submittedId = useTestStore((s) => s.submittedId);
+  const markSubmitted = useTestStore((s) => s.markSubmitted);
   const { user, isPending } = useCurrentUserState();
   const [saved, setSaved] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [openCalc, setOpenCalc] = useState(false);
@@ -56,6 +60,19 @@ function ResultPage() {
   useEffect(() => {
     hydrateResult();
   }, [hydrateResult]);
+
+  useEffect(() => {
+    if (!hydrated || stage !== "result" || !result?.triadCode || submittedId) return;
+    let cancelled = false;
+    recordSubmission({ data: { result, answers } })
+      .then((res) => {
+        if (!cancelled && res.id) markSubmitted(res.id);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, stage, result, answers, submittedId, markSubmitted]);
 
   if (!hydrated) {
     return (

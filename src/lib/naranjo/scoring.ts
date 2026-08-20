@@ -154,6 +154,15 @@ export type StyleFlag =
   | "yea-saying"
   | "midpoint";
 
+export const FLAG_LABEL: Record<StyleFlag, string> = {
+  random: "随机",
+  exaggeration: "夸大",
+  defense: "防御",
+  inconsistency: "冲突",
+  "yea-saying": "一律同意",
+  midpoint: "中立回避",
+};
+
 export type ResponseStyle = {
   extremePct: number;
   midpointPct: number;

@@ -206,9 +206,9 @@ export const COMPARE_BANK: CompareQuestion[] = [
   // —— 用户举例：so2 vs so3 ——
   cq(
     "c-2so-3so-p",
-    "在一个团体里，我更想成为的是：",
-    { subtype: "2so", text: "人人都需要、都欠点我的那个人。被围着转、被敬畏，才像自己。" },
-    { subtype: "3so", text: "被看见成功的那个人：有成绩、有名声、站得住。" },
+    "如果只能选一个，我更在意的是：",
+    { subtype: "2so", text: "成为那个真正有影响力、能左右局面的人。" },
+    { subtype: "3so", text: "成为那个看起来最成功、最有名声的人。" },
   ),
   cq(
     "c-2so-3so-f",

@@ -211,6 +211,12 @@ export const COMPARE_BANK: CompareQuestion[] = [
     { subtype: "3so", text: "成为那个看起来最成功、最有名声的人。" },
   ),
   cq(
+    "c-2so-3so-image",
+    "成功的形象对我来说：",
+    { subtype: "2so", text: "固然重要——因为它能帮我更好地统治一切。" },
+    { subtype: "3so", text: "本身就是目的。被看见成功，我才像还在。" },
+  ),
+  cq(
     "c-2so-3so-f",
     "被晾在边上时，我更先感到的是：",
     { subtype: "2so", text: "没人来臣服、来需要我了。我的慷慨没有换到称帝的位置。" },

@@ -777,9 +777,9 @@ export const CENTER_LABEL: Record<CenterId, string> = {
 };
 
 export const CENTER_FULL: Record<CenterId, string> = {
-  heart: "情感中心",
-  head: "头脑中心",
-  gut: "身体中心",
+  heart: "形象 / 被看见的位置",
+  head: "不确定 / 预先解释",
+  gut: "意志 / 身体边界",
 };
 
 export const CENTER_PASSION: Record<CenterId, string> = {

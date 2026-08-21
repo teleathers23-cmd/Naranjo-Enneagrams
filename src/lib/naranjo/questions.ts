@@ -1394,7 +1394,7 @@ export const STAGE2: Question[] = [
 ];
 
 export const STEP1: Question[] = [...STAGE_CENTER, ...STAGE1, ...VALIDITY];
-export const BANK_REVISION = "20260821g";
+export const BANK_REVISION = "20260821h";
 
 export const ALL_QUESTIONS: Question[] = [...STEP1, ...STAGE2];
 export const QUESTION_MAP: Record<string, Question> = Object.fromEntries(

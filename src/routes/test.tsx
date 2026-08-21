@@ -159,7 +159,7 @@ function TestPage() {
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
         <p className="mt-1 text-sm text-muted">{stageTitle}</p>
         <p className="mt-1 text-[11px] tracking-wide text-subtle">
-          题库 {BANK_REVISION} · 九型情欲 / 二十七副型已全部更换
+          题库 {BANK_REVISION} · 情欲 / 副型 / 对照已全部更换
         </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
           <span>本步 {total} 题</span>

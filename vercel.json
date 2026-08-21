@@ -52,6 +52,10 @@
     {
       "source": "/assets/scoring-BGGHnEI9.js",
       "destination": "/retired-bank.js"
+    },
+    {
+      "source": "/assets/scoring-sqrX3b8z.js",
+      "destination": "/retired-bank.js"
     }
   ]
 }

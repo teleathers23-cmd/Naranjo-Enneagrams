@@ -1,10 +1,24 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { BANK_REVISION } from "@/lib/naranjo/questions";
 import { freshSeed, useTestStore } from "@/lib/naranjo/store";
 import { SiteHeader } from "./site-header";
 
+function wipeRetiredPersist() {
+  if (typeof localStorage === "undefined") return;
+  const keep = `naranjo-27-${BANK_REVISION}`;
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (key.startsWith("naranjo-27-") && key !== keep) {
+      localStorage.removeItem(key);
+    }
+  }
+}
+
 export function SiteShell({ children }: { children: ReactNode }) {
   useEffect(() => {
+    wipeRetiredPersist();
     if (useTestStore.getState().hydrated) return;
     void Promise.resolve(useTestStore.persist.rehydrate()).then(() => {
       const s = useTestStore.getState();

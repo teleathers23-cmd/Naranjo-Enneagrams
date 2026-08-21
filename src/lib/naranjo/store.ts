@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { TypeId } from "./catalog";
 import { pickCompareQuestions } from "./compare";
-import { STEP1 } from "./questions";
+import { STEP1, BANK_REVISION } from "./questions";
 import {
   pickStage2Types,
   score,
@@ -135,7 +135,7 @@ export const useTestStore = create<TestState>()(
       },
     }),
     {
-      name: "naranjo-27-v8",
+      name: `naranjo-27-${BANK_REVISION}`,
       skipHydration: true,
       partialize: (s) => ({
         answers: s.answers,

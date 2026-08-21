@@ -15,6 +15,7 @@ import {
   STEP1,
   STAGE2_HELP,
   TEST_INSTRUCTION,
+  BANK_REVISION,
   chunkQuestions,
   interleaveQuestions,
   type Question,
@@ -132,7 +133,7 @@ function TestPage() {
 
   const stageTitle =
     stage === 1
-      ? "第一步：中心注意与九型情欲（混排）"
+      ? "第一步：激情与固着（混排）"
       : stage === 2
         ? "第二步：副型结构（混排）"
         : "第三步：易混结构对照";
@@ -157,6 +158,9 @@ function TestPage() {
       <header className="text-center">
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
         <p className="mt-1 text-sm text-muted">{stageTitle}</p>
+        <p className="mt-1 text-[11px] tracking-wide text-subtle">
+          题库 {BANK_REVISION} · 一号 / 二号 / 心脑腹已更换
+        </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
           <span>本步 {total} 题</span>
           <span>已完成 {done} 题</span>

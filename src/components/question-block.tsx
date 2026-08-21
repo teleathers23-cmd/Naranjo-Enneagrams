@@ -27,7 +27,10 @@ export function QuestionBlock({
     >
       <p className="text-sm leading-relaxed text-fg">
         <span className="mr-2 font-medium text-subtle">{index + 1}.</span>
-        {question.text}
+        {question.text.includes("秩序一破就危险") ||
+        question.text.includes("我很小就会为马虎和乱坐立不安")
+          ? "（本题已下线，请清除进度后重测）"
+          : question.text}
         {question.help && (
           <button
             type="button"

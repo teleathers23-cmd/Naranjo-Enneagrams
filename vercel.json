@@ -4,5 +4,42 @@
   "buildCommand": "npm run build",
   "env": {
     "VITE_AUTH_ENABLED": "true"
-  }
+  },
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        },
+        { "key": "Clear-Site-Data", "value": "\"cache\"" }
+      ]
+    },
+    {
+      "source": "/test",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        },
+        { "key": "Clear-Site-Data", "value": "\"cache\"" }
+      ]
+    },
+    {
+      "source": "/assets/scoring-CbYZLW6Q.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/assets/scoring-CbYZLW6Q.js",
+      "destination": "/retired-bank.js"
+    }
+  ]
 }

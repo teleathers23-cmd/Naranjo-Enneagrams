@@ -3,7 +3,7 @@ import { EnneagramGlyph } from "@/components/enneagram-glyph";
 import { SiteShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { INSTINCTS, TYPES } from "@/lib/naranjo/catalog";
-import { STEP1 } from "@/lib/naranjo/questions";
+import { STEP1_SHOWN_N } from "@/lib/naranjo/questions";
 import { useTestStore } from "@/lib/naranjo/store";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -146,7 +146,8 @@ function Home() {
       </section>
 
       <p className="mt-10 text-center text-xs text-subtle">
-        第一步 {STEP1.length} 题混排（含效度题），第二步对筛出的型号出副型题，第三步按易混结构动态对照（含「两个都像我 / 两个都不像我」）。
+        第一步约 {STEP1_SHOWN_N}{" "}
+        题（每型等权随机抽取，含中心与效度），第二步对筛出的型号出副型题，第三步按易混结构动态对照（含「两个都像我 / 两个都不像我」）。
       </p>
     </SiteShell>
   );

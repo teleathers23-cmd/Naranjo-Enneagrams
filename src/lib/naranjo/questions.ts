@@ -1394,7 +1394,7 @@ export const STAGE2: Question[] = [
 ];
 
 export const STEP1: Question[] = [...STAGE_CENTER, ...STAGE1, ...VALIDITY];
-export const BANK_REVISION = "20260821h";
+export const BANK_REVISION = "20260821i";
 
 export const ALL_QUESTIONS: Question[] = [...STEP1, ...STAGE2];
 export const QUESTION_MAP: Record<string, Question> = Object.fromEntries(
@@ -1404,7 +1404,7 @@ export const QUESTION_MAP: Record<string, Question> = Object.fromEntries(
 export const LIKERT_LABELS = ["不像", "较少", "中立", "较像", "极像"] as const;
 
 export const TEST_INSTRUCTION =
-  "按你私下真正怎么运作来选，不要按「我应该是怎样的好人」或你希望别人看到的样子。题目已打散，不要猜这是哪一号。行为热闹不等于性格结构；正反句子都点「极像」，权重会被下调。";
+  "按你私下真正怎么运作来选，不要按「我应该是怎样的好人」或你希望别人看到的样子。第一步从全库等权抽取并打散，不要猜这是哪一号。行为热闹不等于性格结构；正反句子都点「极像」，权重会被下调。";
 
 export const STAGE1_HELP: Record<TypeId, string> = {
   1: "看的是愤怒有没有被做成长期的「应该」与不服气，不是你有没有道德或爱整齐。",
@@ -1460,6 +1460,75 @@ export function interleaveQuestions(qs: Question[], seed: number): Question[] {
     out.push(remaining.splice(idx, 1)[0]!);
   }
   return out;
+}
+
+const TYPE_IDS: TypeId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const CENTER_IDS: CenterId[] = ["heart", "head", "gut"];
+
+/** 每型等权抽取，保证第一步筛查全面且题量可控。 */
+export const STEP1_TYPE_N = 5;
+export const STEP1_CENTER_N = 4;
+export const STEP1_VALIDITY_N = 4;
+export const STEP1_SHOWN_N =
+  TYPE_IDS.length * STEP1_TYPE_N +
+  CENTER_IDS.length * STEP1_CENTER_N +
+  STEP1_VALIDITY_N;
+
+function pickFrom(
+  pool: Question[],
+  n: number,
+  rng: () => number,
+  used: Set<string>,
+): Question[] {
+  const avail = shuffle(
+    pool.filter((q) => !used.has(q.id)),
+    rng,
+  );
+  const out: Question[] = [];
+  for (const q of avail) {
+    if (out.length >= n) break;
+    out.push(q);
+    used.add(q.id);
+  }
+  return out;
+}
+
+/**
+ * 从全库等权抽取第一步题目：每型 5 题（至少 1 反向 + 1 固着）、每中心 4 题、效度题全收。
+ * 同一种子得到同一套题与同一顺序；重新开始会换种子。
+ */
+export function pickStep1Questions(seed: number): Question[] {
+  const rng = mulberry32((seed >>> 0 || 1) ^ 0x9e3779b9);
+  const used = new Set<string>();
+  const picked: Question[] = [];
+
+  for (const type of TYPE_IDS) {
+    const items = STAGE1.filter((q) => q.type === type);
+    const rev = items.filter((q) => q.reverse);
+    const fix = items.filter((q) => q.facet === "fixation" && !q.reverse);
+    const pas = items.filter((q) => !q.reverse && q.facet !== "fixation");
+    const take: Question[] = [];
+    take.push(...pickFrom(rev, 1, rng, used));
+    take.push(...pickFrom(fix, 1, rng, used));
+    take.push(
+      ...pickFrom([...pas, ...fix, ...rev], STEP1_TYPE_N - take.length, rng, used),
+    );
+    picked.push(...take);
+  }
+
+  for (const center of CENTER_IDS) {
+    picked.push(
+      ...pickFrom(
+        STAGE_CENTER.filter((q) => q.center === center),
+        STEP1_CENTER_N,
+        rng,
+        used,
+      ),
+    );
+  }
+
+  picked.push(...pickFrom(VALIDITY, STEP1_VALIDITY_N, rng, used));
+  return interleaveQuestions(picked, seed);
 }
 
 export function chunkQuestions(qs: Question[], size: number): Question[][] {

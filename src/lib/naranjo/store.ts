@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { TypeId } from "./catalog";
 import { pickCompareQuestions } from "./compare";
-import { STEP1, BANK_REVISION } from "./questions";
+import { pickStep1Questions, BANK_REVISION } from "./questions";
 import {
   pickStage2Types,
   score,
@@ -74,22 +74,24 @@ export const useTestStore = create<TestState>()(
           consentAt: s.consentAt ?? Date.now(),
         })),
       goStage2: () => {
-        const { answers } = get();
-        const missing = STEP1.some((q) => answers[q.id] === undefined);
+        const { answers, shuffleSeed } = get();
+        const seed = shuffleSeed || 1;
+        const missing = pickStep1Questions(seed).some((q) => answers[q.id] === undefined);
         if (missing) return false;
-        const types = pickStage2Types(answers);
+        const types = pickStage2Types(answers, seed);
         set({ stage: 2, stage2Types: types });
         return true;
       },
       goStage3: () => {
         const { answers, stage2Types, shuffleSeed } = get();
-        const types = stage2Types.length ? stage2Types : pickStage2Types(answers);
-        const missing = stage2QuestionsFor(types, shuffleSeed || 1).some(
+        const seed = shuffleSeed || 1;
+        const types = stage2Types.length ? stage2Types : pickStage2Types(answers, seed);
+        const missing = stage2QuestionsFor(types, seed).some(
           (q) => answers[q.id] === undefined,
         );
         if (missing) return false;
-        const prelim = score(answers, types);
-        const items = pickCompareQuestions(prelim, shuffleSeed || 1);
+        const prelim = score(answers, types, [], seed);
+        const items = pickCompareQuestions(prelim, seed);
         set({
           stage: 3,
           stage2Types: types,
@@ -99,8 +101,9 @@ export const useTestStore = create<TestState>()(
       },
       finish: () => {
         const { answers, stage2Types, stage3Ids, shuffleSeed } = get();
-        const types = stage2Types.length ? stage2Types : pickStage2Types(answers);
-        const result = score(answers, types, stage3Ids, shuffleSeed || 1);
+        const seed = shuffleSeed || 1;
+        const types = stage2Types.length ? stage2Types : pickStage2Types(answers, seed);
+        const result = score(answers, types, stage3Ids, seed);
         set({ stage: "result", result, stage2Types: types, submittedId: null, accountSavedId: null });
         return true;
       },
@@ -127,7 +130,7 @@ export const useTestStore = create<TestState>()(
         const { answers, stage2Types, stage3Ids, stage, shuffleSeed } = get();
         if (stage !== "result") return;
         if (!Object.keys(answers).length) return;
-        const types = stage2Types.length ? stage2Types : pickStage2Types(answers);
+        const types = stage2Types.length ? stage2Types : pickStage2Types(answers, shuffleSeed || 1);
         set({
           result: score(answers, types, stage3Ids, shuffleSeed || 1),
           stage2Types: types,

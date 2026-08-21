@@ -23,7 +23,7 @@ export const Route = createRootRoute({
           "依克劳迪奥·纳兰霍原典的九型人格二十七本能副型测验。情欲、固着与反型，而非类型加本能的简单叠加。",
       },
       { name: "theme-color", content: "#f4f0e6" },
-      { name: "naranjo-bank", content: "20260821h" },
+      { name: "naranjo-bank", content: "20260821i" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -37,7 +37,7 @@ export const Route = createRootRoute({
     ],
     scripts: [
       {
-        children: `(function(){try{if(window.caches)caches.keys().then(function(k){k.forEach(function(x){caches.delete(x)})});if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){if(/^naranjo-27-(v[0-9]+|20260821[a-g])$/.test(keys[i]))localStorage.removeItem(keys[i]);}}catch(e){}})();`,
+        children: `(function(){try{if(window.caches)caches.keys().then(function(k){k.forEach(function(x){caches.delete(x)})});if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){if(/^naranjo-27-(v[0-9]+|20260821[a-h])$/.test(keys[i]))localStorage.removeItem(keys[i]);}}catch(e){}})();`,
       },
     ],
   }),

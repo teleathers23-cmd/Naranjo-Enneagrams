@@ -12,12 +12,11 @@ import {
   type CompareQuestion,
 } from "@/lib/naranjo/compare";
 import {
-  STEP1,
   STAGE2_HELP,
   TEST_INSTRUCTION,
   BANK_REVISION,
   chunkQuestions,
-  interleaveQuestions,
+  pickStep1Questions,
   type Question,
 } from "@/lib/naranjo/questions";
 import { stage2QuestionsFor, unanswered } from "@/lib/naranjo/scoring";
@@ -47,7 +46,7 @@ function TestPage() {
   const [missing, setMissing] = useState<string[]>([]);
 
   const questions: Question[] = useMemo(() => {
-    if (stage === 1) return interleaveQuestions(STEP1, shuffleSeed || 1);
+    if (stage === 1) return pickStep1Questions(shuffleSeed || 1);
     if (stage === 2) return stage2QuestionsFor(stage2Types, shuffleSeed || 1);
     return [];
   }, [stage, stage2Types, shuffleSeed]);
@@ -64,7 +63,7 @@ function TestPage() {
         title: `第 ${i + 1} 组`,
         desc:
           stage === 1
-            ? "中心注意、激情与固着混排。不要猜这是哪一号。"
+            ? "每型等权抽取后混排。不要猜这是哪一号。"
             : "副型句子混排。按结构本身作答。",
         items,
       })),
@@ -159,7 +158,7 @@ function TestPage() {
         <h1 className="font-display text-2xl font-medium">纳兰霍二十七副型测验</h1>
         <p className="mt-1 text-sm text-muted">{stageTitle}</p>
         <p className="mt-1 text-[11px] tracking-wide text-subtle">
-          题库 {BANK_REVISION} · 情欲 / 副型 / 对照已全部更换
+          题库 {BANK_REVISION} · 第一步每型等权抽取
         </p>
         <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-medium text-muted">
           <span>本步 {total} 题</span>

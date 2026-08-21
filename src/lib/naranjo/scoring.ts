@@ -21,6 +21,7 @@ import {
   STEP1 as STEP1_QUESTIONS,
   VALIDITY,
   interleaveQuestions,
+  pickStep1Questions,
   type Question,
 } from "./questions";
 import {
@@ -403,9 +404,10 @@ function rankedTypesInCenter(
   return [...CENTER_TYPES[center]].sort((a, b) => pcts[b] - pcts[a]);
 }
 
-export function pickStage2Types(answers: Answers): TypeId[] {
-  const style = analyzeStyle(answers, STEP1);
-  const acc = accumulate(answers, STEP1, style);
+export function pickStage2Types(answers: Answers, seed = 1): TypeId[] {
+  const step1 = pickStep1Questions(seed);
+  const style = analyzeStyle(answers, step1);
+  const acc = accumulate(answers, step1, style);
   const pcts = ipsatize(applyTypeConflicts(typePcts(acc), style));
   const picked: TypeId[] = [];
   for (const center of CENTERS) {
@@ -562,8 +564,8 @@ export function score(
   stage3Ids: string[] = [],
   seed = 1,
 ): Result {
-  const stage2Qs = stage2QuestionsFor(stage2Types);
-  const shown = [...STEP1, ...stage2Qs];
+  const stage2Qs = stage2QuestionsFor(stage2Types, seed);
+  const shown = [...pickStep1Questions(seed), ...stage2Qs];
   const style = analyzeStyle(answers, shown);
   const acc = accumulate(answers, shown, style);
 

@@ -38,7 +38,9 @@ export const TYPES: {
   fixation: string;
   fixationEs: string;
   virtue: string;
+  virtueEs: string;
   trap: string;
+  trapEs: string;
   center: "gut" | "heart" | "head";
   name: string;
   brief: string;
@@ -51,13 +53,15 @@ export const TYPES: {
     fixation: "怨恨",
     fixationEs: "Resentimiento",
     virtue: "安详",
+    virtueEs: "Serenity",
     trap: "完美",
+    trapEs: "Perfection",
     center: "gut",
     name: "怨恨",
     brief:
       "情欲为愤怒：对不完美现实的持续抗议与纠正冲动。他们的怒气极少以直接爆发的形式出现，而是固着为长期的怨恨与“这件事应该如何”的强迫性判断。无论是世界还是自我，一般都被视作没有达到应有的状态。",
     neurosis:
-      "一号的神经症核心是愤怒（ira），固着是怨恨（resentimiento）。主体不能忍受存在的缺陷，把怒转化为道德正确、批评与自我强制。怒被当成不正当而压抑，于是成为长期不满、身体紧张、对他人与自己的苛责。美德是安详：允许世界与自己不必被纠正。这不是「追求卓越」，而是无法停止抗议。",
+      "一号的神经症核心是情欲「愤怒」（Ira），固着为「怨恨」（Resentimiento）。伊查佐最初以「怨恨」描述其自我观。主体无法容忍存在的缺陷，将怒转化为道德正确、批评与自我强制。怒被体验为不正当而遭压抑，于是沉淀为长期不满、身体紧张、对他人与自身的苛责。\n\n美德是「安详」（Serenity）：允许世界与自己不必被持续纠正。这并非「追求卓越」，而是无法停止对不完美的抗议。",
   },
   {
     id: 2,
@@ -66,7 +70,9 @@ export const TYPES: {
     fixation: "谄媚",
     fixationEs: "Adulación",
     virtue: "谦卑",
+    virtueEs: "Humility",
     trap: "自由",
+    trapEs: "Freedom",
     center: "heart",
     name: "谄媚",
     brief:
@@ -81,7 +87,9 @@ export const TYPES: {
     fixation: "虚荣／欺骗",
     fixationEs: "Mentira",
     virtue: "诚实",
+    virtueEs: "Honesty",
     trap: "效率",
+    trapEs: "Efficiency",
     center: "heart",
     name: "虚荣",
     brief:
@@ -96,7 +104,9 @@ export const TYPES: {
     fixation: "忧郁",
     fixationEs: "Melancolía",
     virtue: "平静",
+    virtueEs: "Equanimity",
     trap: "真实",
+    trapEs: "Authenticity",
     center: "heart",
     name: "忧郁",
     brief:
@@ -111,7 +121,9 @@ export const TYPES: {
     fixation: "吝啬",
     fixationEs: "Retención",
     virtue: "超脱",
+    virtueEs: "Detachment",
     trap: "观察",
+    trapEs: "Observer",
     center: "head",
     name: "吝啬",
     brief:
@@ -126,7 +138,9 @@ export const TYPES: {
     fixation: "怯懦／指控",
     fixationEs: "Cobardía／Acusación",
     virtue: "勇气",
+    virtueEs: "Courage",
     trap: "安全",
+    trapEs: "Security",
     center: "head",
     name: "怯懦",
     brief:
@@ -141,7 +155,9 @@ export const TYPES: {
     fixation: "计划",
     fixationEs: "Planificación",
     virtue: "节制",
+    virtueEs: "Sobriety",
     trap: "理想",
+    trapEs: "Idealism",
     center: "head",
     name: "计划",
     brief:
@@ -156,7 +172,9 @@ export const TYPES: {
     fixation: "报复",
     fixationEs: "Venganza",
     virtue: "天真",
+    virtueEs: "Innocence",
     trap: "正义",
+    trapEs: "Justice",
     center: "gut",
     name: "报复",
     brief:
@@ -171,7 +189,9 @@ export const TYPES: {
     fixation: "懒散／自我遗忘",
     fixationEs: "Indolencia",
     virtue: "行动",
+    virtueEs: "Action",
     trap: "寻求",
+    trapEs: "Seeker",
     center: "gut",
     name: "懒散",
     brief:
@@ -191,6 +211,7 @@ export type Subtype = {
   countertype: boolean;
   oneLiner: string;
   portrait: string;
+  childhood?: string;
   neurosis: string;
   markers: string[];
   lookalikes: SubtypeId[];
@@ -206,15 +227,17 @@ export const SUBTYPES: Subtype[] = [
     nameEs: "Preocupación",
     nameEn: "Worry",
     countertype: true,
-    oneLiner: "愤怒内转为对身体、秩序与损失的慢性焦虑。反型：看起来不像怒，像担心。",
+    oneLiner: "愤怒内转为对身体、秩序、健康、资源与潜在损失的慢性焦虑。反型：看起来不像怒，像担心。",
     portrait:
-      "纳兰霍称自我保存一号为「担忧」（preocupación），并标为反型。愤怒很少外泄，而沉入对健康、清洁、金钱、程序的过度控制。不完美被体验为将导致具体损失。批评首先针对自己，其次针对环境。旁人见到的是谨慎、烦躁与强迫性检查，见不到那句「事情不该如此」。",
+      "纳兰霍将自我保存一号命名为「担忧」（preocupación），并明确标示其为反型。在此亚型中，愤怒极少外泄，而是内转为对身体、秩序、健康、资源与潜在损失的慢性焦虑与过度控制。不完美被体验为将直接危及具体存续。他们的批评首先指向自身，其次指向环境。旁人所见多为谨慎、烦躁与强迫性检查，而非直接的「事情不该如此」。",
+    childhood:
+      "自我保存一号常在早期家庭环境中扮演「最负责任的人」角色。家庭氛围往往存在混乱、不可预测或高要求因素，使年幼的主体感到自身存续受到威胁。愤怒作为对这种过早负担的原始反应，因被视为危险（既威胁外部关系，也威胁内部控制）而被压抑。结果是，儿童将批评与纠正内化，形成持续的自我监视与对「出错即损失」的预警机制。放松与自发性被体验为对安全的潜在威胁。",
     neurosis:
-      "神经症状态是被压抑的怒转化为焦虑与躯体化：紧张、失眠式警戒、对出错的反复预演。洁癖、节制、自我苛责维持「我是正确的」以免怒直接出现。放松被体验为危险。怨恨指向马虎的他人与不够完美的自己。",
+      "在自我保存领域，被压抑的怒进一步转化为焦虑与躯体化表现：持续紧张、失眠式警戒、对出错的反复预演。洁癖、节制、自我苛责与程序控制成为维持「我是正确的」的屏障，以免怒气直接浮现。放松被体验为危险。怨恨同时指向马虎的他人与不够完美的自己。\n\n纳兰霍指出：此亚型的担忧已成为真正的情欲。它不仅表现为「过度担心」，更表现为对已经完好之事的持续干预，有时因试图「修复」本不需修复之物而反而造成损害。其动机是夸张的预见与控制需要，根植于对生存或保存受威胁的恐惧。自我形象被体验为「过于不完美」，因此活动转化为对自身的持续、强迫性改进。愤怒则被善意与服务态度所掩盖，转化为「好意愿」。",
     markers: [
-      "愤怒表现为担心、烦躁、挑剔，而非爆发",
-      "身体、金钱、家务与安全必须正确",
-      "自我强制与环境控制替代了直接的怒",
+      "愤怒主要表现为担心、烦躁与挑剔，而非爆发。",
+      "身体、金钱、家务、程序与安全必须处于「正确」状态。",
+      "自我强制与对环境的控制，替代了直接的怒气表达。",
     ],
     lookalikes: ["6sp", "3sp", "9sp"],
     naranjoKey: "Preocupación / anxiety of the self-preservation One",

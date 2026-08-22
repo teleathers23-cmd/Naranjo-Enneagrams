@@ -130,7 +130,10 @@ function Home() {
 
       <section className="mt-12">
         <h2 className="font-display text-lg font-medium">九种情欲</h2>
-        <ol className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+          在纳兰霍的性格学体系中，九种情欲（pasiones）构成各类型的核心情绪动力。它们并非短暂的情绪反应，而是长期固化的情绪—认知结构，源于相应美德的缺失，并与主导本能结合后进一步塑造成具体的性格表达。以下依纳兰霍原著中的概念框架予以表述：
+        </p>
+        <ol className="mt-5 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
           {TYPES.map((t) => (
             <li key={t.id} className="flex items-start gap-4 px-4 py-3.5">
               <span className="font-display w-6 shrink-0 text-lg text-primary">
@@ -138,9 +141,9 @@ function Home() {
               </span>
               <div>
                 <p className="text-sm font-medium">
-                  {t.passion}
+                  {t.passion}（{t.passionEs}）
                   <span className="ml-2 text-xs font-normal text-subtle">
-                    {t.passionEs} · {t.fixation}
+                    · {t.fixation}（{t.fixationEs}）
                   </span>
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-muted">{t.brief}</p>
@@ -148,6 +151,9 @@ function Home() {
             </li>
           ))}
         </ol>
+        <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">
+          上述九种情欲构成纳兰霍“情欲—固着—美德”三元组的核心环节。它们与三种本能交互作用后，进一步分化为二十七种具体的亚型结构。
+        </p>
       </section>
 
       <p className="mt-10 text-center text-xs text-subtle">

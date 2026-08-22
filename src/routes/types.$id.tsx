@@ -56,6 +56,7 @@ function SubtypePage() {
           </div>
           <p className="mt-2 text-sm text-muted">
             {subtype.nameEs} / {subtype.nameEn}
+            {subtype.aka ? ` · 又称${subtype.aka}` : ""}
           </p>
         </div>
         <EnneagramGlyph className="size-16 text-primary" highlight={subtype.type} />

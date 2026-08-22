@@ -109,14 +109,19 @@ function Home() {
 
       <section className="mt-12">
         <h2 className="font-display text-lg font-medium">三种本能</h2>
-        <p className="mt-1 text-sm text-muted">
-          本能不单独决定类型。它使同一情欲长成三种不同性格。性本能是一对一的强度，对象可以是人、事或物，不限于情爱。
-        </p>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 max-w-3xl space-y-3 text-sm leading-relaxed text-muted">
+          <p>
+            在纳兰霍（Claudio Naranjo）的类型学体系中，三种本能并不独立决定性格类型。它们与九种基本情欲/激情（pasiones）相互作用，使同一种情欲在不同本能优势的调制下，分化为三种具有明确结构差异的性格表达（即二十七种亚型）。本能在此扮演的是“能量导向与注意焦点”的角色，而非类型本身的决定因素。
+          </p>
+          <p>
+            性本能尤其需要澄清：它并非狭义的情爱或生殖驱力，而是指向一对一关系中的强度、吸引、选择与能量传递。其对象可以是人、事或物，这一焦点具有排他的单一性，并不限于情爱领域。
+          </p>
+        </div>
+        <ul className="mt-5 grid gap-3 sm:grid-cols-3">
           {INSTINCTS.map((i) => (
             <li key={i.id} className="rounded-xl border border-border bg-surface p-4">
               <p className="text-xs tracking-wide text-subtle">{i.nameEs}</p>
-              <p className="mt-1 font-medium">{i.name}</p>
+              <p className="mt-1 font-medium">{i.name}本能</p>
               <p className="mt-2 text-sm leading-relaxed text-muted">{i.brief}</p>
             </li>
           ))}

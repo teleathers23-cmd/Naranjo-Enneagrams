@@ -2,10 +2,8 @@ import {
   createRootRoute,
   HeadContent,
   Link,
-  Outlet,
   Scripts,
 } from "@tanstack/react-router";
-import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
@@ -16,7 +14,7 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: APP_NAME },
+      { title: "本站已关闭" },
       {
         name: "description",
         content:
@@ -56,9 +54,13 @@ export const Route = createRootRoute({
       </head>
       <body>
         <PreviewHostBridge />
-        <AuthProvider>
-          <Outlet />
-        </AuthProvider>
+        <main className="grid min-h-dvh place-items-center bg-bg px-6 text-center text-fg">
+          <div>
+            <p className="text-xs tracking-[0.2em] text-muted">二十七副型</p>
+            <h1 className="mt-2 font-display text-3xl font-medium">本站已关闭</h1>
+            <p className="mt-3 text-sm text-muted">测验与百科已停止开放。</p>
+          </div>
+        </main>
         <Scripts />
       </body>
     </html>
